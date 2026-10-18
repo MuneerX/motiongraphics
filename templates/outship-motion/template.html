@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Outship Style Starter Template</title>
+
+  <!-- Google Fonts: Instrument Serif, Plus Jakarta Sans, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- GSAP 3 & Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    :root {
+      --cream: #FCF8F2;
+      --cream-card: #FFFDF9;
+      --obsidian: #0D0A09;
+      --obsidian-card: #161210;
+      --terracotta: #DF5A37;
+      --terracotta-soft: #F4D7CE;
+      --ink: #141210;
+      --muted: #78716C;
+      --alert-red: #F43F5E;
+      --badge-green: #DCFCE7;
+      --badge-purple: #7C3AED;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-serif: 'Instrument Serif', Georgia, serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body { width: 100%; height: 100%; background: #080706; color: #F5F2EB; font-family: var(--font-sans); overflow: hidden; }
+
+    /* Headless Render Mode */
+    body.headless-render, body.headless-render .studio-shell, body.headless-render .viewport-area {
+      width: 1920px !important; height: 1080px !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: var(--cream) !important;
+    }
+    body.headless-render .studio-topbar, body.headless-render .scene-strip, body.headless-render .studio-controls { display: none !important; }
+    body.headless-render #root { position: absolute !important; top: 0 !important; left: 0 !important; width: 1920px !important; height: 1080px !important; transform: none !important; box-shadow: none !important; }
+
+    /* Studio Shell */
+    .studio-shell { display: flex; flex-direction: column; width: 100vw; height: 100vh; }
+    .studio-topbar { height: 48px; background: #12100E; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 100; flex-shrink: 0; }
+    .studio-brand { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; }
+    .studio-badge { background: rgba(223, 90, 55, 0.16); color: #FF7A59; border: 1px solid rgba(223, 90, 55, 0.35); padding: 2px 8px; border-radius: 99px; font-size: 11px; font-family: var(--font-mono); }
+    .scene-strip { height: 38px; background: #0D0B0A; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 4px; padding: 0 12px; overflow-x: auto; flex-shrink: 0; }
+    .scene-strip::-webkit-scrollbar { display: none; }
+    .scene-pill { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: #A8A29E; font-size: 11px; padding: 4px 9px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-family: var(--font-mono); }
+    .scene-pill.active { background: var(--terracotta); border-color: var(--terracotta); color: #fff; font-weight: 600; }
+    .viewport-area { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at center, #181412 0%, #060504 100%); overflow: hidden; }
+
+    #root { position: relative; width: 1920px; height: 1080px; background: var(--cream); overflow: hidden; transform-origin: center center; box-shadow: 0 30px 90px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.08); }
+    #three-stage { position: absolute; inset: 0; width: 1920px; height: 1080px; pointer-events: none; z-index: 2; }
+    .scene-layer { position: absolute; inset: 0; width: 1920px; height: 1080px; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; z-index: 5; }
+
+    .editorial-serif { font-family: var(--font-serif); font-style: italic; font-weight: 400; }
+    .hero-line { font-size: 64px; letter-spacing: -0.03em; font-weight: 500; color: var(--ink); display: flex; align-items: baseline; gap: 18px; }
+    .hero-line.light { color: #F7F4EE; }
+
+    .studio-controls { height: 64px; background: #12100E; border-top: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 14px; padding: 0 20px; z-index: 100; flex-shrink: 0; }
+    .ctrl-btn { background: #1F1B18; border: 1px solid rgba(255,255,255,0.12); color: #F5F2EB; height: 36px; padding: 0 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+    .ctrl-btn.primary { background: var(--terracotta); border-color: var(--terracotta); color: #fff; }
+    .scrubber-wrap { flex: 1; display: flex; align-items: center; gap: 12px; }
+    #timeline-slider { flex: 1; accent-color: var(--terracotta); height: 6px; cursor: pointer; }
+    .time-readout { font-family: var(--font-mono); font-size: 13px; color: #D6D3CD; min-width: 140px; text-align: right; }
+  </style>
+</head>
+<body>
+<div class="studio-shell">
+  <header class="studio-topbar">
+    <div class="studio-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="11" height="11" fill="#DF5A37"/><rect x="10" y="10" width="11" height="11" stroke="#F5F2EB" stroke-width="2.5"/></svg>
+      <span>Outship Motion Template</span>
+      <span class="studio-badge">1920×1080 • Deterministic GSAP + WebGL</span>
+    </div>
+  </header>
+  <nav class="scene-strip" id="scene-strip"></nav>
+  <main class="viewport-area" id="viewport-area">
+    <div id="root" data-composition-id="main" data-start="0" data-duration="10" data-width="1920" data-height="1080">
+      <canvas id="three-stage" width="1920" height="1080"></canvas>
+      <section class="scene-layer" id="s1">
+        <div class="hero-line">
+          <span>Make your ideas</span>
+          <span class="editorial-serif" style="color:var(--terracotta); font-size:78px;">unforgettable</span>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer class="studio-controls">
+    <button class="ctrl-btn primary" id="btn-play">▶ Play</button>
+    <div class="scrubber-wrap"><input type="range" id="timeline-slider" min="0" max="10" step="0.02" value="0" /></div>
+    <div class="time-readout" id="time-readout">00:00.00 / 00:10.00</div>
+  </footer>
+</div>
+
+<script>
+  if (navigator.webdriver || window.location.search.includes('render=1')) {
+    document.body.classList.add('headless-render');
+  }
+
+  // 1. Three.js Deterministic Pixel Mosaic
+  const canvas = document.getElementById('three-stage');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+  renderer.setSize(1920, 1080, false);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, 1920 / 1080, 0.1, 100);
+  camera.position.set(0, 0, 20);
+
+  const pixelGroup = new THREE.Group();
+  scene.add(pixelGroup);
+  const pixelMeshArr = [];
+  const coords = [
+    { x: -11, y: 3, s: 0.36 }, { x: 11, y: 3, s: 0.36 },
+    { x: -9, y: -4, s: 0.38 }, { x: 9, y: -4, s: 0.38 }
+  ];
+  coords.forEach((c, i) => {
+    const geo = new THREE.PlaneGeometry(c.s, c.s);
+    const mat = new THREE.MeshBasicMaterial({ color: 0xDF5A37, transparent: true, opacity: 0.8 });
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(c.x, c.y, 0);
+    m.userData = { baseX: c.x, baseY: c.y, speed: 0.2 + i * 0.1, phase: i };
+    pixelGroup.add(m);
+    pixelMeshArr.push(m);
+  });
+
+  function renderThreeAt(t) {
+    pixelMeshArr.forEach(m => {
+      m.position.x = m.userData.baseX + Math.sin(t * m.userData.speed + m.userData.phase) * 0.25;
+      m.position.y = m.userData.baseY + Math.cos(t * m.userData.speed + m.userData.phase) * 0.25;
+    });
+    renderer.render(scene, camera);
+  }
+
+  // 2. GSAP Master Timeline
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+  tl.set('#s1', { autoAlpha: 1 }, 0)
+    .fromTo('#s1 .hero-line', { y: 40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6, ease: 'power3.out' }, 0.2);
+
+  tl.eventCallback('onUpdate', () => {
+    const t = tl.time();
+    renderThreeAt(t);
+  });
+
+  window.__timelines['main'] = tl;
+  window.__duration = 10;
+  window.__seek = (t) => { tl.seek(t, false); renderThreeAt(t); };
+  window.addEventListener('hf-seek', e => window.__seek(e.detail.time));
+
+  // Studio responsive scale
+  function fit() {
+    if (document.body.classList.contains('headless-render')) return;
+    const a = document.getElementById('viewport-area'), r = document.getElementById('root');
+    r.style.transform = `scale(${Math.min((a.clientWidth - 40) / 1920, (a.clientHeight - 40) / 1080, 1.0)})`;
+  }
+  window.addEventListener('resize', fit); fit();
+  window.__seek(0);
+</script>
+</body>
+</html>

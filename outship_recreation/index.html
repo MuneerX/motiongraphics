@@ -1,0 +1,1961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Outship — Hire AI-Native Engineers (Full 53.4s HyperFrames Recreation)</title>
+
+  <!-- Google Fonts: Instrument Serif, Plus Jakarta Sans, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- GSAP 3.12.5 & Three.js r128 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    :root {
+      --cream: #FCF8F2;
+      --cream-card: #FFFDF9;
+      --obsidian: #0D0A09;
+      --obsidian-card: #161210;
+      --terracotta: #DF5A37;
+      --terracotta-soft: #F4D7CE;
+      --terracotta-dim: rgba(223, 90, 55, 0.18);
+      --ink: #141210;
+      --muted: #78716C;
+      --purple-cursor: #7C3AED;
+      --green-badge: #DCFCE7;
+      --green-text: #15803D;
+      --yellow-badge: #FEF9C3;
+      --yellow-text: #A16207;
+      --red-alert: #EF4444;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-serif: 'Instrument Serif', Georgia, serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #080706;
+      color: #F5F2EB;
+      font-family: var(--font-sans);
+      overflow: hidden;
+    }
+
+    /* HEADLESS RENDER MODE (Clean 1920x1080 without UI chrome) */
+    body.headless-render,
+    body.headless-render .studio-shell,
+    body.headless-render .viewport-area {
+      width: 1920px !important;
+      height: 1080px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+      background: var(--cream) !important;
+    }
+
+    body.headless-render .studio-topbar,
+    body.headless-render .scene-strip,
+    body.headless-render .studio-controls {
+      display: none !important;
+    }
+
+    body.headless-render #root {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 1920px !important;
+      height: 1080px !important;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    /* STUDIO SHELL */
+    .studio-shell {
+      display: flex;
+      flex-direction: column;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .studio-topbar {
+      height: 48px;
+      background: #12100E;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 100;
+      flex-shrink: 0;
+    }
+
+    .studio-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .studio-badge {
+      background: rgba(223, 90, 55, 0.16);
+      color: #FF7A59;
+      border: 1px solid rgba(223, 90, 55, 0.35);
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+    }
+
+    /* SCENE JUMP STRIP */
+    .scene-strip {
+      height: 38px;
+      background: #0D0B0A;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      flex-shrink: 0;
+    }
+    .scene-strip::-webkit-scrollbar { display: none; }
+
+    .scene-pill {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #A8A29E;
+      font-size: 11px;
+      padding: 4px 9px;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      font-family: var(--font-mono);
+    }
+    .scene-pill:hover {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+    .scene-pill.active {
+      background: var(--terracotta);
+      border-color: var(--terracotta);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* VIEWPORT STAGE WRAPPER */
+    .viewport-area {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #181412 0%, #060504 100%);
+      overflow: hidden;
+    }
+
+    /* HYPERFRAMES COMPOSITION ROOT (1920x1080) */
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      background: var(--cream);
+      overflow: hidden;
+      transform-origin: center center;
+      box-shadow: 0 30px 90px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.08);
+    }
+
+    #three-stage {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* SCENE LAYERS */
+    .scene-layer {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      z-index: 5;
+    }
+
+    /* TYPOGRAPHY HELPERS */
+    .editorial-serif {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    .hero-line {
+      font-size: 64px;
+      letter-spacing: -0.03em;
+      font-weight: 500;
+      color: var(--ink);
+      display: flex;
+      align-items: baseline;
+      gap: 18px;
+    }
+
+    .hero-line.light {
+      color: #F7F4EE;
+    }
+
+    /* SUBTLE PIXEL GRID PATTERN */
+    .pixel-grid-border {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: grid;
+      grid-template-columns: repeat(48, 40px);
+      grid-template-rows: repeat(27, 40px);
+      z-index: 3;
+    }
+
+    .pixel-box {
+      width: 18px;
+      height: 18px;
+      background: var(--terracotta);
+      margin: 11px;
+      opacity: 0;
+    }
+
+    /* SCENE 2: AI LOGOS */
+    .ai-card {
+      position: absolute;
+      border-radius: 42px;
+      background: linear-gradient(145deg, rgba(32, 22, 19, 0.94), rgba(12, 9, 8, 0.98));
+      border: 1.5px solid rgba(223, 90, 55, 0.38);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.7), inset 0 1px 18px rgba(223, 90, 55, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s ease;
+    }
+
+    /* SCENE 3: SYNTAX TOKENS */
+    .syntax-token {
+      position: absolute;
+      font-family: var(--font-mono);
+      font-size: 46px;
+      font-weight: 400;
+      pointer-events: none;
+    }
+
+    /* SCENE 4: CORNER BRACKETS & OUTSHIP LOGO */
+    .corner-bracket {
+      position: absolute;
+      width: 110px;
+      height: 110px;
+      border-color: var(--terracotta);
+      border-style: solid;
+    }
+    .bracket-tl {
+      border-width: 26px 0 0 26px;
+      top: 420px;
+      left: 710px;
+    }
+    .bracket-br {
+      border-width: 0 26px 26px 0;
+      bottom: 420px;
+      right: 710px;
+    }
+
+    .outship-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    /* SCENE 5: 5 STACKED ENGINEERING CARDS */
+    .eng-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      width: 1100px;
+      z-index: 6;
+    }
+
+    .eng-card {
+      background: rgba(254, 252, 248, 0.96);
+      border: 1.5px solid rgba(20, 18, 16, 0.08);
+      border-radius: 22px;
+      padding: 22px 36px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.18);
+    }
+
+    .eng-card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .eng-card-title {
+      font-size: 29px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+
+    .eng-card-sub {
+      font-size: 20px;
+      color: #78716C;
+      margin-top: 3px;
+    }
+
+    /* SCENE 6: VIBE CODING TERMINAL & RED PILLS */
+    .terminal-box {
+      width: 820px;
+      height: 690px;
+      background: #110E0D;
+      border: 1.5px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 35px 100px rgba(0,0,0,0.85);
+      display: flex;
+      flex-direction: column;
+      font-family: var(--font-mono);
+    }
+
+    .terminal-header {
+      height: 48px;
+      background: #181412;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #78716C;
+      font-size: 17px;
+    }
+
+    .terminal-body {
+      padding: 28px 34px;
+      font-size: 19px;
+      line-height: 1.65;
+      color: #A8A29E;
+      flex: 1;
+    }
+
+    .alert-pill {
+      position: absolute;
+      background: rgba(45, 10, 14, 0.94);
+      border: 1.5px solid #F43F5E;
+      color: #FB7185;
+      padding: 16px 32px;
+      border-radius: 20px;
+      font-family: var(--font-mono);
+      font-size: 25px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 18px 45px rgba(244, 63, 94, 0.3);
+      z-index: 20;
+    }
+
+    /* SCENE 7: CREATE A TASK & README BROWSER */
+    .octo-card {
+      width: 220px;
+      height: 220px;
+      background: #FFFDF9;
+      border-radius: 48px;
+      border: 2px solid rgba(223, 90, 55, 0.28);
+      box-shadow: 12px 18px 0px rgba(223, 90, 55, 0.35), 0 25px 60px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: rotate(3deg);
+    }
+
+    .cursor-tag {
+      position: absolute;
+      display: flex;
+      align-items: flex-start;
+      gap: 4px;
+      pointer-events: none;
+      z-index: 30;
+    }
+
+    .cursor-pill {
+      background: #141210;
+      color: #fff;
+      font-size: 20px;
+      font-weight: 600;
+      padding: 6px 18px;
+      border-radius: 99px;
+      margin-top: 20px;
+      margin-left: -4px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    }
+
+    .cursor-pill.candidate {
+      background: #6D28D9;
+      border: 2px solid #C4B5FD;
+    }
+
+    .browser-window {
+      width: 1580px;
+      height: 860px;
+      background: #FFFDF9;
+      border: 2px solid #141210;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.12);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .browser-topbar {
+      height: 68px;
+      background: #111110;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      color: #fff;
+    }
+
+    /* SCENE 8: CANDIDATE PARALLAX CARDS */
+    .cand-card {
+      position: absolute;
+      background: #FAF4EC;
+      border: 1.5px solid rgba(223, 90, 55, 0.35);
+      border-radius: 24px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 18px 45px rgba(223, 90, 55, 0.08);
+    }
+
+    /* SCENE 9: CANDIDATE IDE & CLAUDE MASCOT */
+    .ide-window {
+      width: 1640px;
+      height: 920px;
+      background: #12100E;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 22px;
+      display: grid;
+      grid-template-columns: 280px 1fr 560px;
+      overflow: hidden;
+      box-shadow: 0 40px 110px rgba(0,0,0,0.9);
+      font-family: var(--font-mono);
+    }
+
+    /* SCENE 10: YOU SEE EVERYTHING SPLIT VIEW */
+    .showcase-grid {
+      width: 1680px;
+      height: 860px;
+      display: grid;
+      grid-template-columns: 560px 1fr;
+      align-items: center;
+      gap: 60px;
+    }
+
+    .showcase-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 34px;
+    }
+
+    .showcase-nav-item {
+      font-size: 46px;
+      font-weight: 500;
+      color: #3F3B37;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      letter-spacing: -0.02em;
+      transition: color 0.25s ease;
+    }
+
+    .showcase-nav-item.active {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .showcase-stage-card {
+      width: 1060px;
+      height: 820px;
+      border-radius: 36px;
+      overflow: hidden;
+      position: relative;
+      background: linear-gradient(135deg, #D98A6C 0%, #8C4A52 50%, #3B2838 100%);
+      padding: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 28px 70px rgba(0,0,0,0.18);
+    }
+
+    /* SCENE 12: LEADERBOARD ROWS */
+    .score-row {
+      position: absolute;
+      left: 330px;
+      width: 1260px;
+      height: 156px;
+      background: #FAF3EB;
+      border: 2px solid rgba(223, 90, 55, 0.35);
+      border-radius: 28px;
+      padding: 0 38px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 12px 32px rgba(223, 90, 55, 0.08);
+    }
+
+    /* SCENE 13: CALENDAR CARDS */
+    .cal-block {
+      position: absolute;
+      border-radius: 18px;
+      padding: 20px 26px;
+      font-family: var(--font-sans);
+      box-shadow: 0 14px 34px rgba(0,0,0,0.07);
+      border-left: 6px solid;
+    }
+    .cal-purple {
+      background: rgba(224, 212, 252, 0.92);
+      border-left-color: #7C3AED;
+      color: #5B21B6;
+    }
+    .cal-peach {
+      background: rgba(250, 219, 207, 0.92);
+      border-left-color: #DF5A37;
+      color: #9A3412;
+    }
+
+    /* BOTTOM TRANSPORT CONTROLS */
+    .studio-controls {
+      height: 64px;
+      background: #12100E;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 20px;
+      z-index: 100;
+      flex-shrink: 0;
+    }
+
+    .ctrl-btn {
+      background: #1F1B18;
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #F5F2EB;
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease;
+    }
+    .ctrl-btn:hover { background: #2C2623; }
+    .ctrl-btn.primary {
+      background: var(--terracotta);
+      border-color: var(--terracotta);
+      color: #fff;
+    }
+
+    .scrubber-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #timeline-slider {
+      flex: 1;
+      accent-color: var(--terracotta);
+      height: 6px;
+      cursor: pointer;
+    }
+
+    .time-readout {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: #D6D3CD;
+      min-width: 140px;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+
+<div class="studio-shell">
+  <!-- STUDIO HEADER -->
+  <header class="studio-topbar">
+    <div class="studio-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="3" width="11" height="11" fill="#DF5A37"/>
+        <rect x="10" y="10" width="11" height="11" stroke="#F5F2EB" stroke-width="2.5"/>
+      </svg>
+      <span>Outship — "Hire AI-Native Engineers" (53.4s HyperFrames Recreation)</span>
+      <span class="studio-badge">1920×1080 • Deterministic WebGL + GSAP</span>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button class="ctrl-btn" id="btn-toggle-audio">🔊 Audio: ON</button>
+      <button class="ctrl-btn" id="btn-fullscreen">⛶ Fullscreen</button>
+    </div>
+  </header>
+
+  <!-- 14-SCENE DIRECT JUMP BAR -->
+  <nav class="scene-strip" id="scene-strip"></nav>
+
+  <!-- STAGE VIEWPORT -->
+  <main class="viewport-area" id="viewport-area">
+    <!-- HYPERFRAMES COMPOSITION ROOT -->
+    <div id="root"
+         data-composition-id="main"
+         data-start="0"
+         data-duration="53.4"
+         data-width="1920"
+         data-height="1080">
+
+      <!-- AUDIO TRACK -->
+      <audio id="soundtrack" src="audio.wav" preload="auto"></audio>
+
+      <!-- DETERMINISTIC THREE.JS PIXEL & PARTICLE CANVAS -->
+      <canvas id="three-stage" width="1920" height="1080"></canvas>
+
+      <!-- ============================================================
+           SCENE 1 (00:00 - 00:02): "Engineers are shipping everyday"
+           ============================================================ -->
+      <section class="scene-layer" id="s1">
+        <div class="hero-line">
+          <span id="s1-w1">Engineers</span>
+          <span id="s1-w2">are shipping</span>
+          <span id="s1-w3" class="editorial-serif" style="font-size:76px; color:var(--ink);">everyday</span>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SCENE 2 (00:02 - 00:05): "with AI" + Floating AI Logos
+           ============================================================ -->
+      <section class="scene-layer" id="s2" style="background: var(--obsidian);">
+        <div class="hero-line light" style="z-index: 10;">
+          <span style="font-weight:400;">with</span>
+          <span style="color: var(--terracotta); font-weight: 700;">AI</span>
+        </div>
+
+        <!-- Floating AI Tool Cards -->
+        <!-- 1. Claude Starburst -->
+        <div class="ai-card" id="ai-claude" style="width:230px; height:230px; top:180px; left:230px;">
+          <svg width="120" height="120" viewBox="0 0 100 100">
+            <g stroke="#D97757" stroke-width="8" stroke-linecap="round">
+              <line x1="50" y1="12" x2="50" y2="88"/>
+              <line x1="12" y1="50" x2="88" y2="50"/>
+              <line x1="23" y1="23" x2="77" y2="77"/>
+              <line x1="77" y1="23" x2="23" y2="77"/>
+              <line x1="35" y1="15" x2="65" y2="85"/>
+              <line x1="15" y1="35" x2="85" y2="65"/>
+            </g>
+          </svg>
+        </div>
+
+        <!-- 2. OpenAI Spiral Flower -->
+        <div class="ai-card" id="ai-openai" style="width:220px; height:220px; bottom:220px; right:280px;">
+          <svg width="115" height="115" viewBox="0 0 100 100" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round">
+            <circle cx="50" cy="50" r="28"/>
+            <path d="M50 22 C68 22, 78 38, 72 55 C66 72, 46 80, 32 70 C18 60, 20 36, 36 26"/>
+            <polygon points="50,34 64,42 64,58 50,66 36,58 36,42" stroke-width="5"/>
+          </svg>
+        </div>
+
+        <!-- 3. Meta Infinity -->
+        <div class="ai-card" id="ai-meta" style="width:180px; height:180px; top:120px; right:380px;">
+          <svg width="100" height="64" viewBox="0 0 120 70" fill="none">
+            <path d="M25 52 C12 52 10 20 28 20 C42 20 52 48 60 48 C68 48 78 20 92 20 C110 20 108 52 95 52 C82 52 72 28 60 28 C48 28 38 52 25 52 Z" stroke="#1D65C1" stroke-width="10" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <!-- 4. Windsurf W -->
+        <div class="ai-card" id="ai-windsurf" style="width:185px; height:185px; top:140px; left:520px;">
+          <svg width="100" height="64" viewBox="0 0 100 60" fill="none">
+            <path d="M12 18 L30 46 L50 20 L70 46 L88 18" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <!-- 5. Gemini 4-Point Star -->
+        <div class="ai-card" id="ai-gemini" style="width:230px; height:230px; top:310px; right:170px;">
+          <svg width="120" height="120" viewBox="0 0 100 100">
+            <defs>
+              <linearGradient id="gemGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#3B82F6"/>
+                <stop offset="50%" stop-color="#10B981"/>
+                <stop offset="100%" stop-color="#F59E0B"/>
+              </linearGradient>
+            </defs>
+            <path d="M50 8 Q52 48 92 50 Q52 52 50 92 Q48 52 8 50 Q48 48 50 8 Z" fill="url(#gemGrad)"/>
+          </svg>
+        </div>
+
+        <!-- 6. OpenCode -->
+        <div class="ai-card" id="ai-opencode" style="width:170px; height:170px; top:110px; right:130px;">
+          <span style="font-family:var(--font-mono); font-weight:700; font-size:24px; color:#F5F2EB; letter-spacing:0.04em;">opencode</span>
+        </div>
+
+        <!-- 7. Cursor 3D Cube -->
+        <div class="ai-card" id="ai-cursor" style="width:205px; height:205px; bottom:180px; left:160px;">
+          <svg width="105" height="105" viewBox="0 0 100 100">
+            <polygon points="50,12 86,32 86,72 50,92 14,72 14,32" fill="#3F3F46" stroke="#A1A1AA" stroke-width="3"/>
+            <polygon points="50,12 86,32 50,52 14,32" fill="#71717A"/>
+            <polygon points="50,52 86,32 86,72 50,92" fill="#27272A"/>
+          </svg>
+        </div>
+
+        <!-- 8. GitHub Copilot Hexagons -->
+        <div class="ai-card" id="ai-copilot" style="width:190px; height:190px; bottom:130px; left:430px;">
+          <svg width="95" height="95" viewBox="0 0 100 100" fill="none">
+            <circle cx="36" cy="40" r="14" fill="#38BDF8"/>
+            <circle cx="64" cy="40" r="14" fill="#38BDF8"/>
+            <circle cx="36" cy="68" r="14" fill="#34D399"/>
+            <circle cx="64" cy="68" r="14" fill="#34D399"/>
+          </svg>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SCENE 3 (00:05 - 00:10): "But hiring hasn't caught up yet."
+           ============================================================ -->
+      <section class="scene-layer" id="s3" style="background: var(--cream);">
+        <!-- Double-row Terracotta Pixel Grid Frame -->
+        <div id="s3-pixel-border" class="pixel-grid-border"></div>
+
+        <!-- Sub-beat 3A: But hiring hasn't caught up yet -->
+        <div class="hero-line" id="s3-line1" style="position:absolute;">
+          <span id="s3-but">But</span>
+          <span id="s3-hiring" style="font-weight:700; color:var(--terracotta);">hiring</span>
+          <span id="s3-rest">hasn't caught up yet.</span>
+        </div>
+
+        <!-- Sub-beat 3B: < don't show how > + floating code tokens -->
+        <div id="s3-dont-wrap" style="position:absolute; width:1920px; height:1080px; display:flex; align-items:center; justify-content:center; opacity:0;">
+          <div style="font-family:var(--font-sans); font-size:66px; color:var(--ink); display:flex; align-items:center; gap:24px;">
+            <span style="font-family:var(--font-mono); font-weight:300;">&lt;</span>
+            <span style="font-weight:500;">don't show how</span>
+            <span style="font-family:var(--font-mono); font-weight:300;">&gt;</span>
+          </div>
+          <span class="syntax-token" style="top:220px; left:620px; color:var(--terracotta);">}</span>
+          <span class="syntax-token" style="top:290px; left:770px; color:var(--terracotta);">}</span>
+          <span class="syntax-token" style="top:440px; left:430px; color:var(--terracotta);">}</span>
+          <span class="syntax-token" style="top:490px; left:180px; color:var(--terracotta);">}</span>
+          <span class="syntax-token" style="top:660px; left:1120px; color:var(--terracotta);">}</span>
+          <span class="syntax-token" style="top:790px; left:1340px; color:var(--terracotta);">}</span>
+          <span class="syntax-token" style="top:230px; left:1310px; color:#141210;">}</span>
+          <span class="syntax-token" style="top:520px; left:1480px; color:#141210;">{</span>
+          <span class="syntax-token" style="top:600px; left:300px; color:#141210;">*</span>
+          <span class="syntax-token" style="top:690px; left:760px; color:#141210;">*</span>
+          <span class="syntax-token" style="top:810px; left:600px; color:#141210;">*</span>
+          <span class="syntax-token" style="top:450px; left:1660px; color:#141210;">*</span>
+          <span class="syntax-token" style="top:310px; left:1140px; color:#EAB308;">\</span>
+          <span class="syntax-token" style="top:570px; left:1740px; color:#EAB308;">\</span>
+        </div>
+
+        <!-- Sub-beat 3C: engineers actually work today -->
+        <div class="hero-line" id="s3-line3" style="position:absolute; opacity:0;">
+          <span>engineers</span>
+          <span id="s3-actually" class="editorial-serif" style="color:var(--terracotta); font-size:76px;">actually</span>
+          <span>work today</span>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SCENE 4 (00:10 - 00:12): [ Meet ] -> outship -> See who's engineering
+           ============================================================ -->
+      <section class="scene-layer" id="s4">
+        <!-- 4A: Meet with Corner Brackets -->
+        <div id="s4-meet" style="position:absolute; inset:0; background:var(--cream); display:flex; align-items:center; justify-content:center;">
+          <div class="corner-bracket bracket-tl" id="s4-b-tl"></div>
+          <div class="editorial-serif" style="font-size:116px; color:var(--ink);">Meet</div>
+          <div class="corner-bracket bracket-br" id="s4-b-br"></div>
+        </div>
+
+        <!-- 4B & 4C: Dark Outship Brand Portal + See who's engineering -->
+        <div id="s4-dark" style="position:absolute; inset:0; background:radial-gradient(circle at center, #26140F 0%, #080605 75%); display:flex; align-items:center; justify-content:center; opacity:0;">
+          <div class="outship-mark" id="s4-logo">
+            <svg width="96" height="96" viewBox="0 0 88 88" fill="none">
+              <rect x="10" y="10" width="46" height="58" stroke="#FFFFFF" stroke-width="11"/>
+              <rect x="32" y="20" width="46" height="58" stroke="#FFFFFF" stroke-width="11"/>
+              <rect x="26" y="26" width="22" height="36" fill="#FFFFFF"/>
+            </svg>
+            <span style="font-size:92px; font-weight:600; color:#FFFFFF; letter-spacing:-0.035em;">outshi<span style="color:var(--terracotta);">p</span></span>
+          </div>
+
+          <div class="hero-line light" id="s4-see" style="position:absolute; opacity:0;">
+            <span>See who's</span>
+            <span class="editorial-serif" style="font-size:80px; color:var(--terracotta);">engineering</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SCENE 5 (00:12 - 00:14): 5 Engineering Signal Cards -> vibe-coding
+           ============================================================ -->
+      <section class="scene-layer" id="s5" style="background: linear-gradient(135deg, #EAD3C6 0%, #BFA79C 45%, #92756A 100%);">
+        <div class="eng-stack" id="s5-stack">
+          <div class="eng-card">
+            <div class="eng-card-icon" style="background:rgba(139,92,246,0.16); color:#7C3AED;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            </div>
+            <div>
+              <div class="eng-card-title">Added Redis cache + invalidation on order write paths</div>
+              <div class="eng-card-sub">Full-Stack Execution</div>
+            </div>
+          </div>
+
+          <div class="eng-card">
+            <div class="eng-card-icon" style="background:rgba(223,90,55,0.16); color:#DF5A37;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div>
+              <div class="eng-card-title">Pushed back on a hallucinated Pydantic validator</div>
+              <div class="eng-card-sub">Agent Communication</div>
+            </div>
+          </div>
+
+          <div class="eng-card">
+            <div class="eng-card-icon" style="background:rgba(34,197,94,0.16); color:#16A34A;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+            </div>
+            <div>
+              <div class="eng-card-title">Added timeout on outbound HTTP the agent missed</div>
+              <div class="eng-card-sub">Verification &amp; Shipping</div>
+            </div>
+          </div>
+
+          <div class="eng-card">
+            <div class="eng-card-icon" style="background:rgba(239,68,68,0.16); color:#DC2626;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+            </div>
+            <div>
+              <div class="eng-card-title">Used plan mode before touching the auth flow</div>
+              <div class="eng-card-sub">Architectural Research</div>
+            </div>
+          </div>
+
+          <div class="eng-card">
+            <div class="eng-card-icon" style="background:rgba(139,92,246,0.16); color:#7C3AED;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            </div>
+            <div>
+              <div class="eng-card-title">Cleaned dead branches the agent left behind</div>
+              <div class="eng-card-sub">Codebase Orientation</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5B: and who's just vibe-coding -->
+        <div id="s5-vibe" style="position:absolute; inset:0; background:var(--obsidian); display:flex; align-items:center; justify-content:center; opacity:0;">
+          <div class="hero-line light">
+            <span>and who's just</span>
+            <span class="editorial-serif" style="font-size:78px; color:var(--terracotta);">vibe-coding</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SCENE 6 (00:14 - 00:17): Claude-Code Failing Terminal + Red Pills
+           ============================================================ -->
+      <section class="scene-layer" id="s6" style="background: var(--obsidian);">
+        <div class="terminal-box" id="s6-term">
+          <div class="terminal-header">claude code</div>
+          <div class="terminal-body">
+            <div><span style="color:#EAB308;">●</span> <strong style="color:#F5F2EB;">Update</strong>(migrations/005_indexes.sql)</div>
+            <div style="color:#78716C; margin-bottom:14px;">  Added <span style="color:#F5F2EB;">12</span> lines, removed <span style="color:#F5F2EB;">0</span> lines</div>
+            <div style="margin-bottom:22px;">Added indexes on the three hottest query paths.</div>
+
+            <div style="margin-bottom:14px; color:#D6D3CD;">&gt; [Pasted text #1 +203 lines] <strong style="color:#fff;">this is failing in prod</strong></div>
+            <div><span style="color:#EAB308;">●</span> <strong style="color:#F5F2EB;">Read</strong>(services/order.ts)</div>
+            <div><span style="color:#EAB308;">●</span> <strong style="color:#F5F2EB;">Update</strong>(services/order.ts)</div>
+            <div style="color:#78716C; margin-bottom:16px;">  Added <span style="color:#F5F2EB;">2</span> lines, removed <span style="color:#F5F2EB;">1</span> line</div>
+            <div style="margin-bottom:20px;">Patched the null branch in the order service.</div>
+
+            <div style="margin-bottom:14px; color:#F5F2EB;">&gt; <strong>why is memory climbing</strong></div>
+            <div><span style="color:#EAB308;">●</span> <strong style="color:#F5F2EB;">Read</strong>(workers/consumer.ts)</div>
+            <div style="margin-top:16px; color:#F5F2EB;">&gt; [Pasted text #2 +891 lines] <strong>still broken</strong></div>
+          </div>
+        </div>
+
+        <!-- 4 Red Warning Badges -->
+        <div class="alert-pill" id="al-1" style="bottom:120px; left:710px; opacity:0; transform:scale(0.7);">
+          <span>ⓘ</span> <span>memory climbing</span>
+        </div>
+        <div class="alert-pill" id="al-2" style="top:140px; left:520px; opacity:0; transform:scale(0.7);">
+          <span>ⓘ</span> <span>failing in prod</span>
+        </div>
+        <div class="alert-pill" id="al-3" style="top:220px; right:310px; opacity:0; transform:scale(0.7);">
+          <span>ⓘ</span> <span>timing out</span>
+        </div>
+        <div class="alert-pill" id="al-4" style="top:440px; right:260px; opacity:0; transform:scale(0.7);">
+          <span>ⓘ</span> <span>it's spiking</span>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SCENE 7 (00:17 - 00:21): Create a task -> README -> Give access
+           ============================================================ -->
+      <section class="scene-layer" id="s7" style="background: var(--cream);">
+        <!-- 7A: Create [Octocat] a task -->
+        <div id="s7-intro" style="display:flex; align-items:center; gap:52px; position:absolute;">
+          <span style="font-size:58px; font-weight:500; color:var(--ink);">Create</span>
+          <div class="octo-card" id="s7-octo" style="position:relative;">
+            <svg width="124" height="124" viewBox="0 0 24 24" fill="#DF5A37">
+              <path d="M12 1.5C6.2 1.5 1.5 6.2 1.5 12c0 4.6 3 8.5 7.2 9.9.5.1.7-.2.7-.5v-1.8c-2.9.6-3.5-1.4-3.5-1.4-.5-1.2-1.2-1.5-1.2-1.5-1-.7.1-.7.1-.7 1.1.1 1.6 1.1 1.6 1.1 1 1.6 2.5 1.1 3.1.9.1-.7.4-1.1.7-1.4-2.3-.3-4.8-1.2-4.8-5.2 0-1.1.4-2.1 1.1-2.8-.1-.3-.5-1.3.1-2.8 0 0 .9-.3 2.9 1.1.8-.2 1.7-.3 2.6-.3.9 0 1.8.1 2.6.3 2-1.4 2.9-1.1 2.9-1.1.6 1.5.2 2.5.1 2.8.7.7 1.1 1.7 1.1 2.8 0 4-2.5 4.9-4.8 5.2.4.3.7 1 .7 2v3c0 .3.2.6.7.5 4.2-1.4 7.2-5.3 7.2-9.9C22.5 6.2 17.8 1.5 12 1.5z"/>
+            </svg>
+            <div class="cursor-tag" id="s7-you-cursor" style="bottom:-14px; right:-38px;">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="#141210" stroke="#fff" stroke-width="2"><polygon points="3 3 10 21 13 13 21 10 3 3"/></svg>
+              <div class="cursor-pill">You</div>
+            </div>
+          </div>
+          <span style="font-size:58px; font-weight:500; color:var(--ink);">a task</span>
+        </div>
+
+        <!-- 7B & 7C: Browser README + Zoom to Give Access button -->
+        <div class="browser-window" id="s7-browser" style="position:absolute; opacity:0; transform:scale(0.85);">
+          <div class="browser-topbar">
+            <div style="display:flex; align-items:center; gap:16px; font-size:20px;">
+              <div style="width:22px; height:22px; border-radius:50%; background:#fff;"></div>
+              <span style="color:#D6D3CD;">Awesome-Assistant-Co</span>
+              <span style="color:#78716C;">/</span>
+              <strong>travel-assistant-task</strong>
+              <span style="border:1px solid rgba(255,255,255,0.25); padding:2px 12px; border-radius:99px; font-size:15px;">Public</span>
+            </div>
+            <div id="s7-cta-btn" style="background:linear-gradient(180deg, #E87A5D, #D95B3B); color:#fff; padding:10px 28px; border-radius:12px; font-size:20px; font-weight:500; cursor:pointer; box-shadow:0 4px 14px rgba(223,90,55,0.35);">
+              Give access to real coding agents
+            </div>
+          </div>
+
+          <div style="padding:42px 64px; flex:1; background:#FCF8F2;">
+            <div style="font-size:44px; font-weight:700; color:var(--ink); margin-bottom:10px;">Voice-Powered Travel Search</div>
+            <div style="font-size:23px; color:#57534E; margin-bottom:34px;">Build a voice-driven travel search application that lets users find Airbnb listings by speaking naturally.</div>
+
+            <div style="background:#F6EFE6; border:1px solid rgba(20,18,16,0.08); border-radius:20px; padding:34px;">
+              <div style="font-family:var(--font-serif); font-style:italic; font-size:38px; color:var(--terracotta); margin-bottom:14px;">Overview</div>
+              <div style="font-size:21px; line-height:1.6; color:#292524; margin-bottom:26px;">
+                Create a web application where users can describe their ideal trip using their voice, and see matching Airbnb listings appear in real time.<br/>
+                The application should feel conversational — users start with a broad request like "I want to visit Tokyo" and progressively refine by speaking additional criteria like "somewhere near Shibuya", "for 4 guests", or "with a pool".
+              </div>
+              <!-- Embedded Airbnb Mockup Bar -->
+              <div style="background:#FFFFFF; border-radius:16px; padding:22px 32px; border:1px solid #E7E5E4; display:flex; align-items:center; justify-content:space-between;">
+                <span style="color:#FF385C; font-weight:700; font-size:26px;">airbnb</span>
+                <div style="display:flex; gap:32px; font-size:18px; color:#44403C; background:#F5F5F4; padding:10px 28px; border-radius:99px;">
+                  <span><strong>Where</strong> Search destinations</span>
+                  <span><strong>Check in</strong> Add dates</span>
+                  <span><strong>Who</strong> Add guests</span>
+                </div>
+                <span style="font-size:18px; color:#57534E;">Filters</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SCENE 8 (00:21 - 00:24): Share with [hundreds] of candidates
+           ============================================================ -->
+      <section class="scene-layer" id="s8" style="background: var(--cream);">
+        <div class="hero-line" style="z-index: 15;">
+          <span>Share with</span>
+          <span style="background:#141210; color:#FCF8F2; padding:8px 36px; border-radius:99px; font-weight:600;">hundreds</span>
+          <span>of candidates</span>
+        </div>
+
+        <!-- Parallax Floating Candidate Cards -->
+        <div class="cand-card" id="cc-1" style="width:420px; top:40px; right:280px;">
+          <div style="height:200px; border-radius:16px; background:linear-gradient(135deg,#D6C7B8,#8D7B6F); margin-bottom:14px; display:flex; align-items:center; justify-content:center; font-size:68px;">👩🏾‍💻</div>
+          <div style="font-size:26px; font-weight:600; color:var(--ink);">Sophia Reed</div>
+          <div style="font-size:22px; color:var(--terracotta);">UI Engineer</div>
+        </div>
+
+        <div class="cand-card" id="cc-2" style="width:360px; top:240px; left:30px;">
+          <div style="height:170px; border-radius:16px; background:linear-gradient(135deg,#E2D5C8,#A8998C); margin-bottom:12px; display:flex; align-items:center; justify-content:center; font-size:56px;">🧑🏼‍💻</div>
+          <div style="font-size:24px; font-weight:600; color:var(--ink);">Mason Brooks</div>
+          <div style="font-size:20px; color:var(--terracotta);">QA Engineer</div>
+        </div>
+
+        <div class="cand-card" id="cc-3" style="width:380px; bottom:40px; left:330px;">
+          <div style="height:180px; border-radius:16px; background:linear-gradient(135deg,#F2D4C8,#C88A76); margin-bottom:12px; display:flex; align-items:center; justify-content:center; font-size:58px;">👩🏻</div>
+          <div style="font-size:24px; font-weight:600; color:var(--ink);">Lily Hayes</div>
+          <div style="font-size:20px; color:var(--terracotta);">Systems Engineer</div>
+        </div>
+
+        <div class="cand-card" id="cc-4" style="width:400px; bottom:50px; right:320px;">
+          <div style="height:180px; border-radius:16px; background:linear-gradient(135deg,#EFE2D8,#B89B8A); margin-bottom:12px; display:flex; align-items:center; justify-content:center; font-size:58px;">👩🏻‍💻</div>
+          <div style="font-size:24px; font-weight:600; color:var(--ink);">Chloe Adams</div>
+          <div style="font-size:20px; color:var(--terracotta);">Data Engineer</div>
+        </div>
+
+        <div class="cand-card" id="cc-5" style="width:350px; top:250px; right:40px;">
+          <div style="height:165px; border-radius:16px; background:linear-gradient(135deg,#27272A,#09090B); margin-bottom:12px; display:flex; align-items:center; justify-content:center; font-size:54px;">🧔🏻‍♂️</div>
+          <div style="font-size:24px; font-weight:600; color:var(--ink);">Noah Mitchell</div>
+          <div style="font-size:20px; color:var(--terracotta);">DevOps Engineer</div>
+        </div>
+
+        <div class="cand-card" id="cc-6" style="width:340px; top:60px; left:260px;">
+          <div style="height:160px; border-radius:16px; background:linear-gradient(135deg,#F5E6D3,#BAA07B); margin-bottom:12px; display:flex; align-items:center; justify-content:center; font-size:52px;">👨🏽‍💻</div>
+          <div style="font-size:24px; font-weight:600; color:var(--ink);">Ethan Walker</div>
+          <div style="font-size:20px; color:var(--terracotta);">Software Engineer</div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SCENE 9 (00:24 - 00:33): Candidate Start Task -> Claude Code -> IDE -> Submit
+           ============================================================ -->
+      <section class="scene-layer" id="s9" style="background: var(--obsidian);">
+        <!-- 9A: Start task button -->
+        <div id="s9-start-box" style="position:absolute; width:1360px; background:#171311; border:1px solid rgba(255,255,255,0.12); border-radius:26px; padding:64px;">
+          <div style="font-size:32px; color:#A8A29E; line-height:1.55; margin-bottom:48px;">
+            Airbnb listings appear in real time. The application should feel conversational — speaking additional criteria like "somewhere near Shibuya".
+          </div>
+          <div style="display:flex; align-items:center; gap:36px;">
+            <div id="s9-start-btn" style="background:#FCF8F2; color:#141210; font-size:30px; font-weight:600; padding:22px 48px; border-radius:18px; display:inline-flex; align-items:center; gap:14px; cursor:pointer;">
+              <span>Start task</span> <span>→</span>
+            </div>
+            <span style="font-size:28px; color:#78716C;">Save for later</span>
+          </div>
+        </div>
+
+        <!-- 9B: Claude Code Pixel Mascot + Prompt Bar -->
+        <div id="s9-prompt-box" style="position:absolute; width:1260px; display:flex; flex-direction:column; gap:24px; opacity:0; transform:scale(0.9);">
+          <div style="display:flex; align-items:flex-end; justify-content:space-between;">
+            <!-- Pixel Mascot -->
+            <svg width="130" height="96" viewBox="0 0 13 10" fill="#DF5A37">
+              <rect x="2" y="1" width="9" height="6"/>
+              <rect x="0" y="3" width="13" height="3"/>
+              <rect x="3" y="3" width="1" height="2" fill="#0D0A09"/>
+              <rect x="9" y="3" width="1" height="2" fill="#0D0A09"/>
+              <rect x="2" y="7" width="1" height="2"/>
+              <rect x="4" y="7" width="1" height="2"/>
+              <rect x="8" y="7" width="1" height="2"/>
+              <rect x="10" y="7" width="1" height="2"/>
+            </svg>
+            <div style="font-family:var(--font-mono); font-size:22px; color:#78716C;">
+              <span style="color:#DF5A37; font-weight:600;">Claude Code</span> v2.1.113
+            </div>
+          </div>
+
+          <div style="background:#181412; border:1.5px solid rgba(255,255,255,0.16); border-radius:20px; padding:32px 38px; font-family:var(--font-mono); font-size:28px; color:#F5F2EB; display:flex; align-items:center; gap:18px;">
+            <span style="color:#78716C;">&gt;</span>
+            <span id="s9-typed-text"></span><span id="s9-caret" style="color:var(--terracotta);">_</span>
+          </div>
+        </div>
+
+        <!-- 9C: 3-Pane Candidate IDE -->
+        <div class="ide-window" id="s9-ide" style="position:absolute; opacity:0; transform:scale(0.92);">
+          <!-- Left Sidebar -->
+          <div style="background:#0E0C0B; border-right:1px solid rgba(255,255,255,0.08); padding:24px; font-size:17px; color:#A8A29E; line-height:2.1;">
+            <div style="font-size:14px; color:#78716C; letter-spacing:0.08em; margin-bottom:8px;">▼ WORKSPACE</div>
+            <div>▸ 📁 backend</div>
+            <div>▸ 📁 frontend</div>
+            <div>▸ 📁 scripts</div>
+            <div>▸ 📁 tests</div>
+            <div>  📄 .dockerignore <span style="color:#EAB308; float:right;">M</span></div>
+            <div>  📄 .env</div>
+            <div>  📄 .gitignore</div>
+            <div>  📄 BACKLOG.md</div>
+            <div>  📄 CLAUDE.md</div>
+            <div>  📄 README.md</div>
+          </div>
+
+          <!-- Center Code Editor -->
+          <div style="background:#141210; border-right:1px solid rgba(255,255,255,0.08); padding:26px 34px; font-size:18px; line-height:1.68; color:#D6D3CD;">
+            <div style="display:flex; gap:28px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:14px; margin-bottom:20px; font-size:17px;">
+              <span style="color:#fff; border-bottom:2px solid var(--terracotta); padding-bottom:12px;">useVoiceQuery.ts</span>
+              <span style="color:#78716C;">useMediaRecorder.ts</span>
+            </div>
+            <pre style="font-family:var(--font-mono);"><span style="color:#F43F5E;">import</span> { parseIntent } <span style="color:#F43F5E;">from</span> <span style="color:#FBBF24;">'../lib/whisper/parseIntent'</span>;
+<span style="color:#F43F5E;">import type</span> { VoiceQuery } <span style="color:#F43F5E;">from</span> <span style="color:#FBBF24;">'../types'</span>;
+
+<span style="color:#F43F5E;">export const</span> <span style="color:#60A5FA;">useVoiceQuery</span> = () =&gt; {
+  <span style="color:#F43F5E;">const</span> queryRef = <span style="color:#60A5FA;">useRef</span>&lt;VoiceQuery&gt;({});
+  <span style="color:#F43F5E;">const</span> [searchParams, setSearchParams]
+    = <span style="color:#60A5FA;">useState</span>&lt;VoiceQuery&gt;({});
+  <span style="color:#F43F5E;">const</span> deferred
+    = <span style="color:#60A5FA;">useDeferredValue</span>(searchParams);
+  <span style="color:#F43F5E;">const</span> [isPending, startTransition]
+    = <span style="color:#60A5FA;">useTransition</span>();
+
+  <span style="color:#F43F5E;">const</span> <span style="color:#60A5FA;">onTranscript</span> = (t: string) =&gt; {
+    <span style="color:#F43F5E;">const</span> next = <span style="color:#60A5FA;">parseIntent</span>(t);
+    queryRef.current = { ...queryRef.current, ...next };
+    <span style="color:#60A5FA;">startTransition</span>(() =&gt; {
+      <span style="color:#60A5FA;">setSearchParams</span>(queryRef.current);
+    });
+  };
+  <span style="color:#F43F5E;">return</span> { deferred, isPending, onTranscript };
+};</pre>
+          </div>
+
+          <!-- Right Claude Code Agent Pane -->
+          <div style="background:#110E0D; padding:26px; font-size:17px; line-height:1.65; color:#A8A29E;">
+            <div style="border:1px solid rgba(223,90,55,0.4); border-radius:12px; padding:18px; margin-bottom:24px; display:flex; align-items:center; justify-content:space-between;">
+              <div>
+                <strong style="color:#DF5A37;">Claude Code</strong> v2.1.113
+              </div>
+              <div style="font-size:14px; color:#78716C;">Run /init to create CLAUDE.md</div>
+            </div>
+            <div style="margin-bottom:14px;"><span style="color:#22C55E;">●</span> <strong style="color:#fff;">Update</strong> vite.config.ts</div>
+            <div style="color:#78716C; margin-bottom:20px;">  + import mkcert from 'vite-plugin-mkcert'</div>
+            <div style="margin-bottom:20px; color:#D6D3CD;">done — dev server now runs on https://localhost:5173</div>
+            <div style="background:#1C1917; padding:12px 16px; border-radius:10px; color:#F5F2EB; margin-bottom:20px;">
+              &gt; scaffold voice input — MediaRecorder → Whisper. skip search for now
+            </div>
+            <div style="margin-bottom:16px;"><span style="color:#22C55E;">●</span> <strong style="color:#fff;">Bash</strong> mkdir -p src/hooks src/lib/whisper</div>
+            <div style="color:#DF5A37; font-weight:600;">✳ Combobulating</div>
+          </div>
+        </div>
+
+        <!-- 9D: Submit Button with Dark Pixel Frame -->
+        <div id="s9-submit-wrap" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:0;">
+          <div id="s9-submit-btn" style="background:#FCF8F2; color:#141210; font-size:48px; font-weight:600; padding:32px 84px; border-radius:26px; box-shadow:0 8px 0 #DF5A37; display:flex; align-items:center; gap:22px;">
+            <span>Submit</span>
+            <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#141210" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </div>
+        </div>
+
+        <!-- Purple Candidate Cursor -->
+        <div class="cursor-tag" id="s9-cursor" style="top:660px; left:980px; opacity:0;">
+          <svg width="42" height="42" viewBox="0 0 24 24" fill="#7C3AED" stroke="#C4B5FD" stroke-width="2"><polygon points="3 3 10 21 13 13 21 10 3 3"/></svg>
+          <div class="cursor-pill candidate">Candidate</div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SCENE 10 (00:33 - 00:39): "You see everything" + 4-Tab Showcase
+           ============================================================ -->
+      <section class="scene-layer" id="s10" style="background: var(--cream);">
+        <!-- 10A: You see everything -->
+        <div class="hero-line" id="s10-intro" style="position:absolute;">
+          <span>You see</span>
+          <span class="editorial-serif" style="color:var(--terracotta); font-size:82px;">everything</span>
+        </div>
+
+        <!-- 10B: Split Showcase -->
+        <div class="showcase-grid" id="s10-grid" style="opacity:0;">
+          <div class="showcase-nav">
+            <div class="showcase-nav-item active" id="nav-0">
+              <span class="nav-dot" id="dot-0" style="width:18px; height:18px; background:var(--terracotta); border-radius:50%; display:inline-block;"></span>
+              <span>Deliverable</span>
+            </div>
+            <div class="showcase-nav-item" id="nav-1">
+              <span class="nav-dot" id="dot-1" style="width:18px; height:18px; background:var(--terracotta); border-radius:50%; display:inline-block; opacity:0;"></span>
+              <span>Code</span>
+            </div>
+            <div class="showcase-nav-item" id="nav-2">
+              <span class="nav-dot" id="dot-2" style="width:18px; height:18px; background:var(--terracotta); border-radius:50%; display:inline-block; opacity:0;"></span>
+              <span>How they use agents</span>
+            </div>
+            <div class="showcase-nav-item" id="nav-3">
+              <span class="nav-dot" id="dot-3" style="width:18px; height:18px; background:var(--terracotta); border-radius:50%; display:inline-block; opacity:0;"></span>
+              <span>AI Analysis</span>
+            </div>
+          </div>
+
+          <div class="showcase-stage-card">
+            <!-- Panel 0: Deliverable UI -->
+            <div id="sp-0" style="position:absolute; width:940px; height:600px; background:#141210; border-radius:24px; padding:34px; color:#fff; display:flex; flex-direction:column; justify-content:space-between; box-shadow:0 24px 60px rgba(0,0,0,0.45);">
+              <div>
+                <div style="font-size:20px; color:#A8A29E; margin-bottom:14px; font-weight:600;">Near Shibuya</div>
+                <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px;">
+                  <div style="height:140px; border-radius:12px; background:linear-gradient(135deg,#78716C,#292524);"></div>
+                  <div style="height:140px; border-radius:12px; background:linear-gradient(135deg,#A8A29E,#44403C);"></div>
+                  <div style="height:140px; border-radius:12px; background:linear-gradient(135deg,#D6D3CD,#57534E);"></div>
+                  <div style="height:140px; border-radius:12px; background:linear-gradient(135deg,#78716C,#1C1917);"></div>
+                </div>
+                <div style="font-size:20px; color:#A8A29E; margin-bottom:14px; font-weight:600;">Top rated</div>
+                <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px;">
+                  <div style="height:140px; border-radius:12px; background:linear-gradient(135deg,#DF5A37,#7C2D12);"></div>
+                  <div style="height:140px; border-radius:12px; background:linear-gradient(135deg,#78716C,#292524);"></div>
+                  <div style="height:140px; border-radius:12px; background:linear-gradient(135deg,#A8A29E,#44403C);"></div>
+                  <div style="height:140px; border-radius:12px; background:linear-gradient(135deg,#57534E,#1C1917);"></div>
+                </div>
+              </div>
+              <div style="background:#1F1C1A; padding:16px 24px; border-radius:14px; color:#A8A29E; font-size:18px;">✦ Ask anything!</div>
+            </div>
+
+            <!-- Panel 1: Code Diff -->
+            <div id="sp-1" style="position:absolute; width:940px; height:680px; background:#141210; border-radius:24px; padding:34px; color:#D6D3CD; font-family:var(--font-mono); font-size:18px; line-height:1.65; opacity:0;">
+              <div style="color:#fff; margin-bottom:18px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px; font-size:20px;">useVoiceQuery.ts</div>
+              <pre>export const <span style="color:#60A5FA;">useVoiceQuery</span> = () =&gt; {
+  const queryRef = useRef&lt;VoiceQuery&gt;({});
+  const [searchParams, setSearchParams] = useState&lt;VoiceQuery&gt;({});
+  const deferred = useDeferredValue(searchParams);
+  const [isPending, startTransition] = useTransition();
+
+  const <span style="color:#60A5FA;">onTranscript</span> = (t: string) =&gt; {
+    const next = parseIntent(t);
+    queryRef.current = { ...queryRef.current, ...next };
+    startTransition(() =&gt; {
+      setSearchParams(queryRef.current);
+    });
+  };
+  return { deferred, isPending, onTranscript };
+};</pre>
+            </div>
+
+            <!-- Panel 2: How they use agents -->
+            <div id="sp-2" style="position:absolute; width:940px; height:640px; background:#141210; border-radius:24px; padding:36px; color:#D6D3CD; font-family:var(--font-mono); font-size:19px; line-height:1.7; opacity:0;">
+              <div style="border:1px solid rgba(223,90,55,0.45); border-radius:14px; padding:20px; margin-bottom:24px;">
+                <strong style="color:#DF5A37;">Claude Code</strong> v2.1.113 — Agent Transcript
+              </div>
+              <div style="margin-bottom:18px;">done — dev server now runs on https://localhost:5173</div>
+              <div style="background:#1F1B18; padding:16px; border-radius:12px; color:#fff; margin-bottom:20px;">
+                &gt; scaffold voice input — MediaRecorder → Whisper. skip search for now
+              </div>
+              <div><span style="color:#22C55E;">●</span> <strong>Bash</strong> mkdir -p src/hooks src/lib/whisper</div>
+              <div style="color:#78716C; margin-bottom:20px;">  created · 3 files</div>
+              <div style="color:#DF5A37; font-weight:600;">✳ Combobulating</div>
+            </div>
+
+            <!-- Panel 3: AI Analysis Rubric Results -->
+            <div id="sp-3" style="position:absolute; width:940px; height:580px; background:#141210; border-radius:24px; padding:38px; color:#F5F2EB; opacity:0;">
+              <div style="font-size:24px; color:#A8A29E; margin-bottom:28px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:16px;">Rubrik Results</div>
+              <div style="display:flex; flex-direction:column; gap:28px; font-size:22px;">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                  <span>Codebase Orientation</span>
+                  <span style="background:rgba(34,197,94,0.2); border:1px solid #22C55E; color:#4ADE80; padding:6px 22px; border-radius:12px; font-weight:600;">Excellent</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                  <span>Architectural Research</span>
+                  <span style="background:rgba(34,197,94,0.2); border:1px solid #22C55E; color:#4ADE80; padding:6px 22px; border-radius:12px; font-weight:600;">Great</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                  <span>Full-Stack Execution</span>
+                  <span style="background:rgba(34,197,94,0.2); border:1px solid #22C55E; color:#4ADE80; padding:6px 22px; border-radius:12px; font-weight:600;">Excellent</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                  <span>Communication with Coding Agent</span>
+                  <span style="background:rgba(34,197,94,0.2); border:1px solid #22C55E; color:#4ADE80; padding:6px 22px; border-radius:12px; font-weight:600;">Great</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SCENE 11 (00:39 - 00:41): "Agents [spinner] analyze candidate performance"
+           ============================================================ -->
+      <section class="scene-layer" id="s11" style="background: #080706; flex-direction:column; justify-content:space-between;">
+        <!-- Top Pixelated Gradient Curtain -->
+        <div id="s11-top-bar" style="width:100%; height:360px; background: repeating-linear-gradient(90deg, rgba(223,90,55,0.85) 0px, rgba(223,90,55,0.85) 24px, rgba(244,215,206,0.9) 24px, rgba(244,215,206,0.9) 48px); mask-image: linear-gradient(to bottom, black 20%, transparent 100%);"></div>
+
+        <div class="hero-line light" style="font-size:56px; align-items:center; z-index:10;">
+          <span>Agents</span>
+          <svg id="s11-spinner" width="56" height="56" viewBox="0 0 50 50">
+            <circle cx="25" cy="25" r="20" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="4"/>
+            <path d="M25 5 A20 20 0 0 1 45 25" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+          <span class="editorial-serif" style="font-size:68px; color:var(--terracotta);">analyze</span>
+          <span>candidate performance</span>
+        </div>
+
+        <!-- Bottom Pixelated Gradient Curtain -->
+        <div id="s11-bot-bar" style="width:100%; height:360px; background: repeating-linear-gradient(90deg, rgba(223,90,55,0.85) 0px, rgba(223,90,55,0.85) 24px, rgba(244,215,206,0.9) 24px, rgba(244,215,206,0.9) 48px); mask-image: linear-gradient(to top, black 20%, transparent 100%);"></div>
+      </section>
+
+      <!-- ============================================================
+           SCENE 12 (00:41 - 00:45): Checklist -> "and score them" Leaderboard
+           ============================================================ -->
+      <section class="scene-layer" id="s12" style="background: var(--cream);">
+        <!-- 12A: Scrolling Checklist -->
+        <div id="s12-checklist" style="position:absolute; display:flex; flex-direction:column; gap:36px; font-size:78px; font-weight:600; letter-spacing:-0.03em;">
+          <div style="color:#A8A29E; display:flex; align-items:center; gap:28px;">
+            <span style="width:62px; height:62px; border-radius:14px; background:#F4B8A8; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:40px;">✓</span>
+            <span>Adaptability</span>
+          </div>
+          <div style="color:#A8A29E; display:flex; align-items:center; gap:28px;">
+            <span style="width:62px; height:62px; border-radius:14px; background:#F4B8A8; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:40px;">✓</span>
+            <span>Testing approach</span>
+          </div>
+          <div style="color:#A8A29E; display:flex; align-items:center; gap:28px;">
+            <span style="width:62px; height:62px; border-radius:14px; background:#F4B8A8; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:40px;">✓</span>
+            <span>Tech stack decisions</span>
+          </div>
+          <div style="color:#141210; display:flex; align-items:center; gap:28px;">
+            <span style="width:62px; height:62px; border-radius:14px; background:var(--terracotta); color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:40px;">✓</span>
+            <span>Iterative mindset</span>
+          </div>
+          <div style="color:#A8A29E; display:flex; align-items:center; gap:28px;">
+            <span style="width:62px; height:62px; border-radius:14px; border:4px solid #D6D3CD; display:inline-block;"></span>
+            <span>Verifies AI output</span>
+          </div>
+          <div style="color:#A8A29E; display:flex; align-items:center; gap:28px;">
+            <span style="width:62px; height:62px; border-radius:14px; border:4px solid #D6D3CD; display:inline-block;"></span>
+            <span>Debugging instinct</span>
+          </div>
+        </div>
+
+        <!-- 12B: "and score them" + Dynamic Leaderboard -->
+        <div id="s12-board" style="position:absolute; inset:0; opacity:0;">
+          <div style="text-align:center; margin-top:140px; font-size:48px; font-weight:500; color:var(--ink);">and score them</div>
+
+          <div class="score-row" id="sr-chloe" style="top:260px;">
+            <div style="display:flex; align-items:center; gap:28px;">
+              <div style="width:104px; height:104px; border-radius:20px; background:#E7E5E4; display:flex; align-items:center; justify-content:center; font-size:52px;">👩🏻‍💻</div>
+              <div>
+                <div style="font-size:38px; font-weight:600; color:var(--ink);">Chloe</div>
+                <div style="font-size:26px; color:var(--terracotta);">Data Engineer</div>
+              </div>
+            </div>
+            <span style="background:var(--green-badge); border:2px solid #86EFAC; color:var(--green-text); font-size:34px; font-weight:600; padding:12px 36px; border-radius:20px;">Excellent</span>
+          </div>
+
+          <div class="score-row" id="sr-noah" style="top:450px;">
+            <div style="display:flex; align-items:center; gap:28px;">
+              <div style="width:104px; height:104px; border-radius:20px; background:#27272A; display:flex; align-items:center; justify-content:center; font-size:52px;">🧔🏻‍♂️</div>
+              <div>
+                <div style="font-size:38px; font-weight:600; color:var(--ink);">Noah</div>
+                <div style="font-size:26px; color:var(--terracotta);">DevOps Engineer</div>
+              </div>
+            </div>
+            <span style="background:var(--green-badge); border:2px solid #86EFAC; color:var(--green-text); font-size:34px; font-weight:600; padding:12px 36px; border-radius:20px;">Great</span>
+          </div>
+
+          <div class="score-row" id="sr-seb" style="top:640px;">
+            <div style="display:flex; align-items:center; gap:28px;">
+              <div style="width:104px; height:104px; border-radius:20px; background:#F5F5F4; display:flex; align-items:center; justify-content:center; font-size:52px;">👨🏻</div>
+              <div>
+                <div style="font-size:38px; font-weight:600; color:var(--ink);">Sebastian</div>
+                <div style="font-size:26px; color:var(--terracotta);">iOS Developer</div>
+              </div>
+            </div>
+            <span style="background:var(--yellow-badge); border:2px solid #FDE047; color:var(--yellow-text); font-size:34px; font-weight:600; padding:12px 36px; border-radius:20px;">Good</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SCENE 13 (00:45 - 00:49): Calendar Swarm -> "only the best."
+           ============================================================ -->
+      <section class="scene-layer" id="s13" style="background: var(--cream);">
+        <div id="s13-words" style="position:absolute; width:1320px; display:flex; justify-content:space-between; font-size:58px; font-weight:500; color:var(--ink);">
+          <span id="s13-left-w">so you</span>
+          <span id="s13-right-w">interview</span>
+        </div>
+
+        <!-- Floating Calendar Cards -->
+        <div id="s13-cals" style="position:absolute; inset:0;">
+          <div class="cal-block cal-purple" id="cb-1" style="width:420px; top:200px; left:1120px;">
+            <div style="font-size:34px; font-weight:600;">Meet with Zoe</div>
+            <div style="font-size:22px; margin-top:6px;">🕙 10:30-11:30</div>
+          </div>
+          <div class="cal-block cal-purple" id="cb-2" style="width:520px; top:650px; left:180px;">
+            <div style="font-size:38px; font-weight:600;">Chat with Owen</div>
+            <div style="font-size:24px; margin-top:6px;">🕔 17:00-17:30</div>
+          </div>
+          <div class="cal-block cal-peach" id="cb-3" style="width:430px; top:470px; left:620px;">
+            <div style="font-size:34px; font-weight:600;">Meet with Caleb</div>
+            <div style="font-size:22px; margin-top:6px;">🕙 10:30-11:30</div>
+          </div>
+          <div class="cal-block cal-peach" id="cb-4" style="width:360px; top:360px; left:80px;">
+            <div style="font-size:28px; font-weight:600;">Chat with Sebastian</div>
+            <div style="font-size:18px; margin-top:4px;">🕑 12:30-14:30</div>
+          </div>
+          <div class="cal-block cal-purple" id="cb-5" style="width:340px; top:540px; left:1420px;">
+            <div style="font-size:26px; font-weight:600;">Chat with Chloe</div>
+            <div style="font-size:18px; margin-top:4px;">🕙 10:00-10:30</div>
+          </div>
+          <div class="cal-block cal-peach" id="cb-6" style="width:350px; top:110px; left:1180px;">
+            <div style="font-size:24px; font-weight:600;">Interview with Noah</div>
+            <div style="font-size:16px; margin-top:4px;">🕗 08:30-10:00</div>
+          </div>
+        </div>
+
+        <!-- 13B: "only the best." pill -->
+        <div id="s13-best" style="position:absolute; border:2.5px solid var(--ink); border-right-color:var(--terracotta); border-bottom-color:var(--terracotta); padding:24px 68px; border-radius:28px; background:var(--cream); font-size:62px; color:var(--ink); opacity:0; transform:scale(0.85);">
+          <span>only the </span>
+          <span class="editorial-serif" style="font-size:72px; color:var(--terracotta);">best.</span>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SCENE 14 (00:49 - 00:53.4): Outship Portal Logo -> Hire AI-native engineers
+           ============================================================ -->
+      <section class="scene-layer" id="s14" style="background: var(--cream);">
+        <div class="outship-mark" id="s14-logo" style="position:absolute;">
+          <svg width="92" height="92" viewBox="0 0 88 88" fill="none">
+            <rect x="10" y="10" width="46" height="58" stroke="#141210" stroke-width="11"/>
+            <rect x="32" y="20" width="46" height="58" stroke="#141210" stroke-width="11"/>
+            <rect x="26" y="26" width="22" height="36" fill="#141210"/>
+          </svg>
+          <span id="s14-wordmark" style="font-size:88px; font-weight:600; color:#141210; letter-spacing:-0.035em;">outshi<span style="color:var(--terracotta);">p</span></span>
+        </div>
+
+        <div class="hero-line" id="s14-tagline" style="position:absolute; opacity:0; transform:scale(0.95);">
+          <span style="font-weight:500;">Hire</span>
+          <span class="editorial-serif" style="color:var(--terracotta); font-size:78px;">AI-native</span>
+          <span style="font-weight:500;">engineers</span>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- STUDIO CONTROLS -->
+  <footer class="studio-controls">
+    <button class="ctrl-btn primary" id="btn-play">▶ Play</button>
+    <div class="scrubber-wrap">
+      <input type="range" id="timeline-slider" min="0" max="53.4" step="0.02" value="0" />
+    </div>
+    <div class="time-readout" id="time-readout">00:00.00 / 00:53.40</div>
+  </footer>
+</div>
+
+<script>
+  // Detect Headless / Automation render mode
+  if (navigator.webdriver || window.location.search.includes('render=1') || window.location.hash === '#render') {
+    document.body.classList.add('headless-render');
+  }
+
+  // =========================================================================
+  // 1. DETERMINISTIC PRNG & THREE.JS PIXEL MATRIX STAGE
+  // =========================================================================
+  function mulberry32(seed) {
+    return function() {
+      let t = (seed += 0x6D2B79F5);
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  const rand = mulberry32(88812);
+
+  const canvas = document.getElementById('three-stage');
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: true,
+    alpha: true,
+    preserveDrawingBuffer: true
+  });
+  renderer.setSize(1920, 1080, false);
+  renderer.setPixelRatio(1);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, 1920 / 1080, 0.1, 100);
+  camera.position.set(0, 0, 20);
+
+  // Floating Terracotta Pixel Mosaic Group (Minimalist, 14 clean perimeter blocks matching video2.mp4)
+  const pixelGroup = new THREE.Group();
+  scene.add(pixelGroup);
+
+  const pixelCoords = [
+    { x: -11.5, y: -2.2, z: 0, s: 0.38 },
+    { x: -7.0, y: 2.2, z: 0, s: 0.36 },
+    { x: 6.8, y: 2.2, z: 0, s: 0.36 },
+    { x: 8.6, y: -0.8, z: 0, s: 0.34 },
+    { x: 7.2, y: -2.5, z: 0, s: 0.44 },
+    { x: -12.0, y: 4.5, z: 0, s: 0.35 },
+    { x: 12.0, y: 4.5, z: 0, s: 0.35 },
+    { x: -11.0, y: -5.0, z: 0, s: 0.35 },
+    { x: 11.0, y: -5.0, z: 0, s: 0.35 },
+    { x: -4.0, y: 5.5, z: 0, s: 0.32 },
+    { x: 4.0, y: -5.5, z: 0, s: 0.32 },
+    { x: 0.0, y: 6.0, z: 0, s: 0.34 }
+  ];
+
+  const pixelMeshArr = [];
+  pixelCoords.forEach((coord, i) => {
+    const geo = new THREE.PlaneGeometry(coord.s, coord.s);
+    const mat = new THREE.MeshBasicMaterial({
+      color: 0xDF5A37,
+      transparent: true,
+      opacity: 0.85
+    });
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(coord.x, coord.y, coord.z);
+    m.userData = { baseX: coord.x, baseY: coord.y, speed: 0.15 + (i % 3) * 0.1, phase: i * 0.8 };
+    pixelGroup.add(m);
+    pixelMeshArr.push(m);
+  });
+
+  // Pure Deterministic Three.js Render Function (Calculated purely from timestamp t)
+  function renderThreeAt(t) {
+    pixelMeshArr.forEach((m) => {
+      const u = m.userData;
+      m.position.x = u.baseX + Math.sin(t * u.speed + u.phase) * 0.25;
+      m.position.y = u.baseY + Math.cos(t * u.speed * 0.8 + u.phase) * 0.25;
+
+      // Visibility modulation based on scene transitions
+      if (t >= 2.0 && t < 5.0) {
+        // Scene 2: Dark obsidian with floating AI logos
+        m.material.color.setHex(0xDF5A37);
+        m.material.opacity = 0.75 + Math.sin(t * 3 + u.phase) * 0.2;
+      } else if (t >= 14.5 && t < 17.0) {
+        // Scene 6: Terminal alerts
+        m.material.color.setHex(0xF43F5E);
+        m.material.opacity = 0.55;
+      } else {
+        m.material.color.setHex(0xDF5A37);
+        m.material.opacity = 0.85;
+      }
+    });
+
+    pixelGroup.rotation.z = Math.sin(t * 0.04) * 0.02;
+    renderer.render(scene, camera);
+  }
+
+  // Populate double-row pixel border in DOM for Scene 3
+  const borderWrap = document.getElementById('s3-pixel-border');
+  for (let r = 0; r < 27; r++) {
+    for (let c = 0; c < 48; c++) {
+      if (r < 2 || r >= 25 || c < 2 || c >= 46) {
+        const d = document.createElement('div');
+        d.className = 'pixel-box';
+        d.id = `px-${r}-${c}`;
+        borderWrap.appendChild(d);
+      } else {
+        const empty = document.createElement('div');
+        borderWrap.appendChild(empty);
+      }
+    }
+  }
+
+  // =========================================================================
+  // 2. MASTER GSAP CHOREOGRAPHY TIMELINE (53.4s)
+  // =========================================================================
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  // Initial State Reset
+  gsap.set(['#s1', '#s2', '#s3', '#s4', '#s5', '#s6', '#s7', '#s8', '#s9', '#s10', '#s11', '#s12', '#s13', '#s14'], {
+    autoAlpha: 0
+  });
+
+  // -------------------------------------------------------------------------
+  // SCENE 1 (0.00s - 2.00s): "Engineers are shipping everyday"
+  // -------------------------------------------------------------------------
+  tl.set('#s1', { autoAlpha: 1 }, 0)
+    .fromTo('#s1-w1', { y: 35, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.5, ease: 'power3.out' }, 0.1)
+    .fromTo('#s1-w2', { y: 35, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.5, ease: 'power3.out' }, 0.25)
+    .fromTo('#s1-w3', { y: 35, scale: 0.92, autoAlpha: 0 }, { y: 0, scale: 1, autoAlpha: 1, duration: 0.6, ease: 'back.out(1.4)' }, 0.45)
+    .to('#s1', { autoAlpha: 0, duration: 0.2 }, 1.85);
+
+  // -------------------------------------------------------------------------
+  // SCENE 2 (2.00s - 5.00s): "with AI" + Floating AI Cards
+  // -------------------------------------------------------------------------
+  const aiCards = ['#ai-claude', '#ai-openai', '#ai-meta', '#ai-windsurf', '#ai-gemini', '#ai-opencode', '#ai-cursor', '#ai-copilot'];
+
+  tl.set('#s2', { autoAlpha: 1 }, 2.0)
+    .fromTo(aiCards,
+      { scale: 0.5, autoAlpha: 0, y: 40 },
+      { scale: 1, autoAlpha: 1, y: 0, duration: 0.6, stagger: 0.08, ease: 'back.out(1.5)' },
+      2.1
+    )
+    .to('#ai-claude', { y: '-=20', x: '+=10', duration: 2.2, ease: 'sine.inOut' }, 2.6)
+    .to('#ai-openai', { y: '+=15', x: '-=12', duration: 2.2, ease: 'sine.inOut' }, 2.6)
+    .to('#ai-gemini', { y: '-=16', x: '-=8', duration: 2.2, ease: 'sine.inOut' }, 2.6)
+    .to('#ai-cursor', { y: '+=18', x: '+=14', duration: 2.2, ease: 'sine.inOut' }, 2.6)
+    .to(aiCards, { scale: 1.15, autoAlpha: 0, duration: 0.35, ease: 'power2.in' }, 4.65)
+    .to('#s2', { autoAlpha: 0, duration: 0.15 }, 4.95);
+
+  // -------------------------------------------------------------------------
+  // SCENE 3 (5.00s - 10.20s): But hiring hasn't caught up -> < don't show how > -> engineers actually work today
+  // -------------------------------------------------------------------------
+  tl.set('#s3', { autoAlpha: 1 }, 5.0)
+    // 3A
+    .fromTo('#s3-but', { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.4 }, 5.1)
+    .fromTo('#s3-hiring', { scale: 1.3, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.45, ease: 'back.out(1.8)' }, 5.3)
+    .fromTo('#s3-rest', { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.4 }, 5.6)
+    .to('#s3-line1', { autoAlpha: 0, y: -20, duration: 0.3 }, 6.8)
+
+    // 3B: < don't show how >
+    .to('#s3-dont-wrap', { autoAlpha: 1, duration: 0.3 }, 7.0)
+    .fromTo('.syntax-token',
+      { scale: 0, autoAlpha: 0 },
+      { scale: 1, autoAlpha: 1, duration: 0.4, stagger: 0.04, ease: 'back.out(1.7)' },
+      7.1
+    )
+    .to('#s3-dont-wrap', { autoAlpha: 0, scale: 1.08, duration: 0.35 }, 8.4)
+
+    // 3C: engineers actually work today + pixel border
+    .to('#s3-line3', { autoAlpha: 1, duration: 0.3 }, 8.6)
+    .fromTo('#s3-actually', { scale: 1.25, color: '#141210' }, { scale: 1, color: '#DF5A37', duration: 0.45, ease: 'power2.out' }, 8.8)
+    .to('.pixel-box', { autoAlpha: 1, duration: 0.4, stagger: 0.003 }, 8.6)
+    .to(['#s3-line3', '.pixel-box'], { autoAlpha: 0, duration: 0.25 }, 10.0)
+    .to('#s3', { autoAlpha: 0, duration: 0.1 }, 10.2);
+
+  // -------------------------------------------------------------------------
+  // SCENE 4 (10.20s - 12.60s): Meet -> outship portal -> See who's engineering
+  // -------------------------------------------------------------------------
+  tl.set('#s4', { autoAlpha: 1 }, 10.2)
+    .fromTo('#s4-b-tl', { x: -60, y: -60, autoAlpha: 0 }, { x: 0, y: 0, autoAlpha: 1, duration: 0.35, ease: 'power3.out' }, 10.25)
+    .fromTo('#s4-b-br', { x: 60, y: 60, autoAlpha: 0 }, { x: 0, y: 0, autoAlpha: 1, duration: 0.35, ease: 'power3.out' }, 10.25)
+    .to('#s4-meet', { autoAlpha: 0, duration: 0.15 }, 11.2)
+    .to('#s4-dark', { autoAlpha: 1, duration: 0.15 }, 11.2)
+    .fromTo('#s4-logo', { scale: 1.6, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.45, ease: 'power4.out' }, 11.2)
+    .to('#s4-logo', { autoAlpha: 0, y: -40, duration: 0.3 }, 11.9)
+    .to('#s4-see', { autoAlpha: 1, y: 0, duration: 0.35, ease: 'power3.out' }, 12.0)
+    .to('#s4', { autoAlpha: 0, duration: 0.15 }, 12.6);
+
+  // -------------------------------------------------------------------------
+  // SCENE 5 (12.60s - 14.50s): 5 Engineering Signal Cards -> vibe-coding
+  // -------------------------------------------------------------------------
+  tl.set('#s5', { autoAlpha: 1 }, 12.6)
+    .fromTo('.eng-card',
+      { y: 140, autoAlpha: 0 },
+      { y: 0, autoAlpha: 1, duration: 0.35, stagger: 0.07, ease: 'power3.out' },
+      12.65
+    )
+    .to('#s5-stack', { autoAlpha: 0, duration: 0.15 }, 13.9)
+    .to('#s5-vibe', { autoAlpha: 1, duration: 0.15 }, 13.9)
+    .fromTo('#s5-vibe .hero-line', { scale: 0.9 }, { scale: 1, duration: 0.3, ease: 'back.out(1.4)' }, 13.9)
+    .to('#s5', { autoAlpha: 0, duration: 0.1 }, 14.5);
+
+  // -------------------------------------------------------------------------
+  // SCENE 6 (14.50s - 17.00s): Claude-Code Failing Terminal + 4 Red Alerts
+  // -------------------------------------------------------------------------
+  tl.set('#s6', { autoAlpha: 1 }, 14.5)
+    .fromTo('#s6-term', { y: 80, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.45, ease: 'power3.out' }, 14.6)
+    .fromTo('#al-2', { scale: 0.6, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.3, ease: 'back.out(2.0)' }, 15.2)
+    .fromTo('#al-1', { scale: 0.6, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.3, ease: 'back.out(2.0)' }, 15.6)
+    .fromTo('#al-3', { scale: 0.6, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.3, ease: 'back.out(2.0)' }, 16.0)
+    .fromTo('#al-4', { scale: 0.6, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.3, ease: 'back.out(2.0)' }, 16.3)
+    .to('#s6', { autoAlpha: 0, duration: 0.15 }, 17.0);
+
+  // -------------------------------------------------------------------------
+  // SCENE 7 (17.00s - 21.00s): Create a task -> README -> Give access
+  // -------------------------------------------------------------------------
+  tl.set('#s7', { autoAlpha: 1 }, 17.0)
+    .fromTo('#s7-intro', { scale: 0.9, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.4, ease: 'power3.out' }, 17.1)
+    .to('#s7-you-cursor', { scale: 0.88, duration: 0.15, yoyo: true, repeat: 1 }, 18.0)
+    .to('#s7-intro', { autoAlpha: 0, scale: 1.1, duration: 0.3 }, 18.2)
+    .to('#s7-browser', { autoAlpha: 1, scale: 1, duration: 0.4, ease: 'power3.out' }, 18.25)
+    // Zoom toward CTA button
+    .to('#s7-browser', { scale: 1.25, x: -320, y: 160, duration: 1.5, ease: 'power2.inOut' }, 19.1)
+    .to('#s7-cta-btn', { scale: 0.94, duration: 0.15, yoyo: true, repeat: 1 }, 20.3)
+    .to('#s7', { autoAlpha: 0, duration: 0.2 }, 21.0);
+
+  // -------------------------------------------------------------------------
+  // SCENE 8 (21.00s - 24.00s): Share with hundreds of candidates
+  // -------------------------------------------------------------------------
+  const candCards = ['#cc-1', '#cc-2', '#cc-3', '#cc-4', '#cc-5', '#cc-6'];
+
+  tl.set('#s8', { autoAlpha: 1 }, 21.0)
+    .fromTo(candCards,
+      { scale: 0.7, autoAlpha: 0, y: 60 },
+      { scale: 1, autoAlpha: 1, y: 0, duration: 0.55, stagger: 0.08, ease: 'back.out(1.4)' },
+      21.15
+    )
+    .to('#cc-1', { y: '-=25', x: '+=12', duration: 2.2, ease: 'sine.inOut' }, 21.6)
+    .to('#cc-2', { y: '+=18', x: '-=10', duration: 2.2, ease: 'sine.inOut' }, 21.6)
+    .to('#cc-4', { y: '-=15', x: '-=14', duration: 2.2, ease: 'sine.inOut' }, 21.6)
+    .to('#s8', { autoAlpha: 0, duration: 0.2 }, 23.85);
+
+  // -------------------------------------------------------------------------
+  // SCENE 9 (24.00s - 33.00s): Candidate perspective -> Claude Code -> IDE -> Submit
+  // -------------------------------------------------------------------------
+  const fullPromptText = "scaffold voice input — MediaRecorder → Whisper. skip search for now";
+  const typedEl = document.getElementById('s9-typed-text');
+
+  tl.set('#s9', { autoAlpha: 1 }, 24.0)
+    .set('#s9-start-box', { autoAlpha: 1 }, 24.0)
+    .to('#s9-cursor', { autoAlpha: 1, duration: 0.2 }, 24.2)
+    .to('#s9-cursor', { x: 50, y: -40, duration: 0.5, ease: 'power2.out' }, 24.4)
+    .to('#s9-start-btn', { scale: 0.94, duration: 0.12, yoyo: true, repeat: 1 }, 25.1)
+    .to('#s9-start-box', { autoAlpha: 0, duration: 0.25 }, 25.4)
+
+    // Prompt bar reveal + Mascot
+    .to('#s9-prompt-box', { autoAlpha: 1, scale: 1, duration: 0.35, ease: 'power3.out' }, 25.6);
+
+  // Deterministic Typewriter effect based on time
+  function updateTypewriter(t) {
+    if (!typedEl) return;
+    if (t < 25.8) {
+      typedEl.textContent = "";
+    } else if (t >= 25.8 && t < 27.5) {
+      const charIndex = Math.min(fullPromptText.length, Math.floor((t - 25.8) / 0.024));
+      typedEl.textContent = fullPromptText.slice(0, charIndex);
+    } else if (t >= 27.5) {
+      typedEl.textContent = fullPromptText;
+    }
+  }
+
+  tl.to('#s9-prompt-box', { autoAlpha: 0, scale: 1.05, duration: 0.3 }, 27.6)
+    // 3-Pane IDE reveal
+    .to('#s9-ide', { autoAlpha: 1, scale: 1, duration: 0.45, ease: 'power3.out' }, 27.8)
+    .to('#s9-ide', { scale: 1.02, duration: 3.2, ease: 'none' }, 28.2)
+    .to('#s9-ide', { autoAlpha: 0, duration: 0.3 }, 31.2)
+
+    // Submit button
+    .to('#s9-submit-wrap', { autoAlpha: 1, duration: 0.3 }, 31.3)
+    .to('#s9-cursor', { x: -20, y: -20, duration: 0.4, ease: 'power2.out' }, 31.5)
+    .to('#s9-submit-btn', { scale: 0.95, duration: 0.15, yoyo: true, repeat: 1 }, 32.1)
+    .to('#s9', { autoAlpha: 0, duration: 0.2 }, 32.9);
+
+  // -------------------------------------------------------------------------
+  // SCENE 10 (33.00s - 39.00s): "You see everything" + 4-Tab Showcase
+  // -------------------------------------------------------------------------
+  tl.set('#s10', { autoAlpha: 1 }, 33.0)
+    .fromTo('#s10-intro', { scale: 0.9, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.4, ease: 'power3.out' }, 33.1)
+    .to('#s10-intro', { autoAlpha: 0, duration: 0.3 }, 34.2)
+    .to('#s10-grid', { autoAlpha: 1, duration: 0.35 }, 34.3)
+
+    // Tab 1: Code
+    .to('#dot-0', { opacity: 0, duration: 0.15 }, 35.4)
+    .to('#dot-1', { opacity: 1, duration: 0.15 }, 35.4)
+    .to('#sp-0', { autoAlpha: 0, duration: 0.2 }, 35.4)
+    .to('#sp-1', { autoAlpha: 1, duration: 0.2 }, 35.5)
+
+    // Tab 2: How they use agents
+    .to('#dot-1', { opacity: 0, duration: 0.15 }, 36.6)
+    .to('#dot-2', { opacity: 1, duration: 0.15 }, 36.6)
+    .to('#sp-1', { autoAlpha: 0, duration: 0.2 }, 36.6)
+    .to('#sp-2', { autoAlpha: 1, duration: 0.2 }, 36.7)
+
+    // Tab 3: AI Analysis (Rubrik)
+    .to('#dot-2', { opacity: 0, duration: 0.15 }, 37.8)
+    .to('#dot-3', { opacity: 1, duration: 0.15 }, 37.8)
+    .to('#sp-2', { autoAlpha: 0, duration: 0.2 }, 37.8)
+    .to('#sp-3', { autoAlpha: 1, duration: 0.2 }, 37.9)
+    .to('#s10', { autoAlpha: 0, duration: 0.2 }, 39.0);
+
+  // -------------------------------------------------------------------------
+  // SCENE 11 (39.00s - 41.50s): Agents analyze candidate performance + Curtains
+  // -------------------------------------------------------------------------
+  tl.set('#s11', { autoAlpha: 1 }, 39.0)
+    .fromTo('#s11-top-bar', { y: -360 }, { y: 0, duration: 0.4, ease: 'power3.out' }, 39.05)
+    .fromTo('#s11-bot-bar', { y: 360 }, { y: 0, duration: 0.4, ease: 'power3.out' }, 39.05)
+    .to('#s11-spinner', { rotation: 720, duration: 2.2, ease: 'linear' }, 39.1)
+    .to('#s11', { autoAlpha: 0, duration: 0.2 }, 41.4);
+
+  // -------------------------------------------------------------------------
+  // SCENE 12 (41.50s - 45.00s): Checklist -> "and score them" Leaderboard
+  // -------------------------------------------------------------------------
+  tl.set('#s12', { autoAlpha: 1 }, 41.5)
+    .fromTo('#s12-checklist', { y: 180, autoAlpha: 0 }, { y: -80, autoAlpha: 1, duration: 1.2, ease: 'power2.inOut' }, 41.6)
+    .to('#s12-checklist', { autoAlpha: 0, duration: 0.25 }, 42.8)
+    .to('#s12-board', { autoAlpha: 1, duration: 0.3 }, 42.9)
+    .fromTo(['#sr-chloe', '#sr-noah', '#sr-seb'],
+      { x: -80, autoAlpha: 0 },
+      { x: 0, autoAlpha: 1, duration: 0.4, stagger: 0.12, ease: 'back.out(1.4)' },
+      43.0
+    )
+    .to('#s12', { autoAlpha: 0, duration: 0.2 }, 45.0);
+
+  // -------------------------------------------------------------------------
+  // SCENE 13 (45.00s - 49.00s): Calendar Swarm -> "only the best."
+  // -------------------------------------------------------------------------
+  const cals = ['#cb-1', '#cb-2', '#cb-3', '#cb-4', '#cb-5', '#cb-6'];
+
+  tl.set('#s13', { autoAlpha: 1 }, 45.0)
+    .fromTo(cals,
+      { scale: 0.5, autoAlpha: 0 },
+      { scale: 1, autoAlpha: 1, duration: 0.55, stagger: 0.08, ease: 'back.out(1.5)' },
+      45.1
+    )
+    .to('#cb-1', { y: '-=20', x: '+=10', duration: 2.0, ease: 'sine.inOut' }, 45.6)
+    .to('#cb-2', { y: '+=15', x: '-=12', duration: 2.0, ease: 'sine.inOut' }, 45.6)
+    .to('#cb-3', { y: '-=12', x: '+=14', duration: 2.0, ease: 'sine.inOut' }, 45.6)
+    .to(cals, { scale: 1.2, autoAlpha: 0, duration: 0.35, ease: 'power2.in' }, 47.3)
+    .to('#s13-words', { autoAlpha: 0, duration: 0.25 }, 47.4)
+    .to('#s13-best', { autoAlpha: 1, scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 47.5)
+    .to('#s13', { autoAlpha: 0, duration: 0.2 }, 48.9);
+
+  // -------------------------------------------------------------------------
+  // SCENE 14 (49.00s - 53.40s): Outship Portal Logo -> Hire AI-native engineers
+  // -------------------------------------------------------------------------
+  tl.set('#s14', { autoAlpha: 1 }, 49.0)
+    .fromTo('#s14-logo', { scale: 1.4, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.5, ease: 'power3.out' }, 49.1)
+    .to('#s14-logo', { autoAlpha: 0, y: -30, duration: 0.35 }, 51.0)
+    .to('#s14-tagline', { autoAlpha: 1, scale: 1, duration: 0.45, ease: 'power3.out' }, 51.2)
+    .to('#s14', { autoAlpha: 1, duration: 1.8 }, 51.6); // Hold peacefully to the end
+
+  // Timeline callback
+  tl.eventCallback('onUpdate', () => {
+    const t = tl.time();
+    updateTypewriter(t);
+    renderThreeAt(t);
+    updateUI(t);
+  });
+
+  window.__timelines['main'] = tl;
+  window.__timelines['outship-main'] = tl;
+  window.__duration = 53.4;
+
+  // Frame seek interface for headless renderers
+  window.__seek = function(t) {
+    tl.seek(t, false);
+    updateTypewriter(t);
+    renderThreeAt(t);
+    updateUI(t);
+  };
+
+  window.addEventListener('hf-seek', (e) => {
+    const target = e.detail && typeof e.detail.time === 'number' ? e.detail.time : 0;
+    window.__seek(target);
+  });
+
+  // =========================================================================
+  // 3. STUDIO UI & TRANSPORT CONTROLS
+  // =========================================================================
+  const playBtn = document.getElementById('btn-play');
+  const slider = document.getElementById('timeline-slider');
+  const readout = document.getElementById('time-readout');
+  const audio = document.getElementById('soundtrack');
+  const audioBtn = document.getElementById('btn-toggle-audio');
+  const sceneStrip = document.getElementById('scene-strip');
+  let audioEnabled = true;
+
+  const scenes = [
+    { id: 's1', name: '01: Shipping', t: 0.0 },
+    { id: 's2', name: '02: With AI', t: 2.0 },
+    { id: 's3', name: '03: Hiring Gap', t: 5.0 },
+    { id: 's4', name: '04: Meet Outship', t: 10.2 },
+    { id: 's5', name: '05: Signals', t: 12.6 },
+    { id: 's6', name: '06: Vibe Coding', t: 14.5 },
+    { id: 's7', name: '07: Create Task', t: 17.0 },
+    { id: 's8', name: '08: Candidates', t: 21.0 },
+    { id: 's9', name: '09: Candidate IDE', t: 24.0 },
+    { id: 's10', name: '10: Showcase', t: 33.0 },
+    { id: 's11', name: '11: Agents Analyze', t: 39.0 },
+    { id: 's12', name: '12: Leaderboard', t: 41.5 },
+    { id: 's13', name: '13: Best', t: 45.0 },
+    { id: 's14', name: '14: Final Lockup', t: 49.0 }
+  ];
+
+  scenes.forEach((sc, idx) => {
+    const pill = document.createElement('button');
+    pill.className = `scene-pill ${idx === 0 ? 'active' : ''}`;
+    pill.textContent = sc.name;
+    pill.onclick = () => {
+      window.__seek(sc.t);
+      if (audioEnabled) {
+        audio.currentTime = sc.t;
+      }
+    };
+    sceneStrip.appendChild(pill);
+  });
+
+  function updateUI(t) {
+    if (!slider || !readout) return;
+    slider.value = t;
+    const m = Math.floor(t / 60).toString().padStart(2, '0');
+    const s = (t % 60).toFixed(2).padStart(5, '0');
+    readout.textContent = `${m}:${s} / 00:53.40`;
+
+    // Highlight active scene pill
+    const pills = sceneStrip.querySelectorAll('.scene-pill');
+    let activeIdx = 0;
+    for (let i = 0; i < scenes.length; i++) {
+      if (t >= scenes[i].t) activeIdx = i;
+    }
+    pills.forEach((p, idx) => {
+      if (idx === activeIdx) p.classList.add('active');
+      else p.classList.remove('active');
+    });
+  }
+
+  // Play / Pause loop
+  let isPlaying = false;
+  let rafId = null;
+  let lastTime = performance.now();
+
+  function tick(now) {
+    if (!isPlaying) return;
+    const dt = (now - lastTime) / 1000;
+    lastTime = now;
+    let nextT = tl.time() + dt;
+    if (nextT >= 53.4) {
+      nextT = 0;
+      if (audioEnabled) audio.currentTime = 0;
+    }
+    window.__seek(nextT);
+    rafId = requestAnimationFrame(tick);
+  }
+
+  playBtn.onclick = () => {
+    if (isPlaying) {
+      isPlaying = false;
+      playBtn.textContent = '▶ Play';
+      cancelAnimationFrame(rafId);
+      audio.pause();
+    } else {
+      isPlaying = true;
+      playBtn.textContent = '⏸ Pause';
+      lastTime = performance.now();
+      if (audioEnabled) {
+        audio.currentTime = tl.time();
+        audio.play().catch(() => {});
+      }
+      rafId = requestAnimationFrame(tick);
+    }
+  };
+
+  slider.oninput = (e) => {
+    const val = parseFloat(e.target.value);
+    window.__seek(val);
+    if (audioEnabled) {
+      audio.currentTime = val;
+    }
+  };
+
+  audioBtn.onclick = () => {
+    audioEnabled = !audioEnabled;
+    audioBtn.textContent = audioEnabled ? '🔊 Audio: ON' : '🔇 Audio: OFF';
+    if (!audioEnabled) {
+      audio.pause();
+    } else if (isPlaying) {
+      audio.currentTime = tl.time();
+      audio.play().catch(() => {});
+    }
+  };
+
+  // Fullscreen toggle
+  document.getElementById('btn-fullscreen').onclick = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
+
+  // Auto-resize #root to fit viewport while preserving 16:9
+  function fitViewport() {
+    if (document.body.classList.contains('headless-render')) return;
+    const area = document.getElementById('viewport-area');
+    const root = document.getElementById('root');
+    if (!area || !root) return;
+    const areaW = area.clientWidth;
+    const areaH = area.clientHeight;
+    const scale = Math.min((areaW - 40) / 1920, (areaH - 40) / 1080, 1.0);
+    root.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', fitViewport);
+  fitViewport();
+
+  // Initial render at t = 0
+  window.__seek(0);
+</script>
+</body>
+</html>

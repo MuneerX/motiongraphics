@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1080, height=1920, initial-scale=1.0" />
+  <title>HyperFrames 10s Vertical Reel (1080x1920)</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+  <!-- Three.js & GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 1080px;
+      height: 1920px;
+      overflow: hidden;
+      background-color: #05060b;
+      font-family: 'Syne', sans-serif;
+      color: #f8fafc;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* HyperFrames Root Composition Container */
+    #root {
+      position: relative;
+      width: 1080px;
+      height: 1920px;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 45%, #111827 0%, #05060b 75%);
+    }
+
+    /* Deterministic Three.js Stage */
+    #three-stage {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Subtle Ambient Grid & Scanline Overlay */
+    .grid-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      background-image: 
+        linear-gradient(to right, rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+      background-size: 90px 90px;
+      pointer-events: none;
+    }
+
+    /* Persistent Corner HUD Telemetry */
+    .hud-frame {
+      position: absolute;
+      inset: 60px;
+      z-index: 10;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 32px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px;
+      letter-spacing: 0.15em;
+      color: #38bdf8;
+      text-transform: uppercase;
+    }
+
+    .hud-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Clip Layers */
+    .clip {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 120px;
+      pointer-events: none;
+    }
+
+    /* Beat 1: Kinetic Title Slam */
+    .title-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 26px;
+      letter-spacing: 0.3em;
+      color: #38bdf8;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+    }
+
+    .title-main {
+      font-size: 116px;
+      font-weight: 800;
+      line-height: 0.94;
+      text-align: center;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Beat 2: Glassmorphic Metric Cards */
+    .metrics-stack {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
+      margin-top: 480px;
+    }
+
+    .metric-card {
+      background: rgba(15, 23, 42, 0.68);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 24px;
+      padding: 36px 44px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .metric-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 24px;
+      color: #94a3b8;
+      letter-spacing: 0.1em;
+    }
+
+    .metric-value {
+      font-size: 56px;
+      font-weight: 800;
+      color: #38bdf8;
+    }
+
+    /* Beat 3: Strobe Typography & Laser Scanline */
+    .strobe-word {
+      font-size: 128px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+      color: #f8fafc;
+      text-shadow: 0 0 40px rgba(56, 189, 248, 0.65);
+    }
+
+    .scanline-bar {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(90deg, transparent, #38bdf8, #a855f7, transparent);
+      box-shadow: 0 0 30px #38bdf8;
+    }
+
+    /* Beat 4: Final CTA & CLI Lockup */
+    .cta-box {
+      text-align: center;
+      background: rgba(9, 13, 24, 0.82);
+      border: 2px solid #38bdf8;
+      border-radius: 32px;
+      padding: 64px 56px;
+      box-shadow: 0 0 80px rgba(56, 189, 248, 0.25);
+    }
+
+    .cta-heading {
+      font-size: 82px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 32px;
+    }
+
+    .cli-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 32px;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 20px 36px;
+      border-radius: 14px;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HyperFrames Declarative Composition Root -->
+  <div
+    id="root"
+    data-composition-id="reel-main"
+    data-start="0"
+    data-duration="10"
+    data-width="1080"
+    data-height="1920"
+  >
+    <canvas id="three-stage" width="1080" height="1920"></canvas>
+    <div class="grid-overlay"></div>
+
+    <!-- Persistent HUD -->
+    <div class="hud-frame">
+      <div class="hud-row">
+        <span>HF // ENGINE_V1</span>
+        <span id="hud-timecode">T+00.00S</span>
+      </div>
+      <div class="hud-row">
+        <span>1080×1920 // 9:16</span>
+        <span>DETERMINISTIC_WEBGL</span>
+      </div>
+    </div>
+
+    <!-- Beat 1 (0.0s - 2.5s): Kinetic Title Slam -->
+    <div class="clip" id="beat-1" data-start="0" data-duration="2.5">
+      <div class="title-eyebrow">NEXT-GEN MOTION CODE</div>
+      <div class="title-main">CODE<br/>YOUR<br/>REELS</div>
+    </div>
+
+    <!-- Beat 2 (2.5s - 5.5s): Telemetry & Metric Cards -->
+    <div class="clip" id="beat-2" data-start="2.5" data-duration="3.0">
+      <div class="metrics-stack">
+        <div class="metric-card" id="card-1">
+          <span class="metric-label">FRAME ACCURACY</span>
+          <span class="metric-value">100%</span>
+        </div>
+        <div class="metric-card" id="card-2">
+          <span class="metric-label">RESOLUTION</span>
+          <span class="metric-value">1080P</span>
+        </div>
+        <div class="metric-card" id="card-3">
+          <span class="metric-label">RENDER PIPELINE</span>
+          <span class="metric-value">WEBGL2</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Beat 3 (5.5s - 8.0s): Kinetic Strobe & Overdrive -->
+    <div class="clip" id="beat-3" data-start="5.5" data-duration="2.5">
+      <div class="scanline-bar" id="laser-bar"></div>
+      <div class="strobe-word" id="strobe-text">ZERO DRIFT</div>
+    </div>
+
+    <!-- Beat 4 (8.0s - 10.0s): Final CTA Lockup -->
+    <div class="clip" id="beat-4" data-start="8.0" data-duration="2.0">
+      <div class="cta-box" id="cta-card">
+        <div class="cta-heading">RENDER NOW</div>
+        <div class="cli-pill">npx hyperframes render</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 1. Seeded Mulberry32 PRNG for 100% Deterministic Particle Placement
+    function mulberry32(seed) {
+      return function() {
+        let t = (seed += 0x6D2B79F5);
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    const rand = mulberry32(42069);
+
+    // 2. Three.js Scene Setup (Fixed 1080x1920, pixelRatio: 1)
+    const canvas = document.getElementById('three-stage');
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: true,
+      preserveDrawingBuffer: true
+    });
+    renderer.setSize(1080, 1920, false);
+    renderer.setPixelRatio(1);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, 1080 / 1920, 0.1, 100);
+    camera.position.set(0, 0, 14);
+
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0x1e293b, 2.2);
+    scene.add(ambientLight);
+
+    const keyLight = new THREE.PointLight(0x38bdf8, 4.5, 35);
+    keyLight.position.set(6, 8, 10);
+    scene.add(keyLight);
+
+    const rimLight = new THREE.PointLight(0xa855f7, 4.0, 35);
+    rimLight.position.set(-7, -6, 8);
+    scene.add(rimLight);
+
+    // Hero Group
+    const coreGroup = new THREE.Group();
+    scene.add(coreGroup);
+
+    // Faceted TorusKnot Core
+    const knotGeo = new THREE.TorusKnotGeometry(1.7, 0.48, 128, 32);
+    const knotMat = new THREE.MeshStandardMaterial({
+      color: 0x0f172a,
+      emissive: 0x0284c7,
+      emissiveIntensity: 0.35,
+      metalness: 0.85,
+      roughness: 0.18,
+      flatShading: true
+    });
+    const torusKnot = new THREE.Mesh(knotGeo, knotMat);
+    coreGroup.add(torusKnot);
+
+    // Wireframe Outer Icosahedron Cage
+    const cageGeo = new THREE.IcosahedronGeometry(3.2, 1);
+    const cageMat = new THREE.MeshBasicMaterial({
+      color: 0x38bdf8,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.35
+    });
+    const wireCage = new THREE.Mesh(cageGeo, cageMat);
+    coreGroup.add(wireCage);
+
+    // 3 Gyroscopic Rings
+    const rings = [];
+    for (let i = 0; i < 3; i++) {
+      const ringGeo = new THREE.TorusGeometry(3.8 + i * 0.55, 0.03, 16, 100);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: i % 2 === 0 ? 0x38bdf8 : 0xa855f7,
+        transparent: true,
+        opacity: 0.6
+      });
+      const ring = new THREE.Mesh(ringGeo, ringMat);
+      coreGroup.add(ring);
+      rings.push(ring);
+    }
+
+    // 250 Deterministic Floating Particles
+    const particleCount = 250;
+    const positions = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount; i++) {
+      positions[i * 3] = (rand() - 0.5) * 18;
+      positions[i * 3 + 1] = (rand() - 0.5) * 28;
+      positions[i * 3 + 2] = (rand() - 0.5) * 14;
+    }
+    const particleGeo = new THREE.BufferGeometry();
+    particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const particleMat = new THREE.PointsMaterial({
+      color: 0x7dd3fc,
+      size: 0.09,
+      transparent: true,
+      opacity: 0.75
+    });
+    const particleField = new THREE.Points(particleGeo, particleMat);
+    scene.add(particleField);
+
+    // 3. Pure Deterministic WebGL State Function: renderAt(timeInSeconds)
+    const hudTimecode = document.getElementById('hud-timecode');
+
+    function renderAt(t) {
+      if (hudTimecode) {
+        hudTimecode.textContent = `T+${t.toFixed(2).padStart(5, '0')}S`;
+      }
+
+      // Base continuous orbital rotation derived purely from timestamp `t`
+      torusKnot.rotation.x = t * 0.9;
+      torusKnot.rotation.y = t * 1.3;
+
+      wireCage.rotation.x = -t * 0.5;
+      wireCage.rotation.z = t * 0.7;
+
+      rings.forEach((ring, idx) => {
+        ring.rotation.x = t * (0.6 + idx * 0.25) + idx;
+        ring.rotation.y = t * (0.8 - idx * 0.15) + idx * 0.5;
+      });
+
+      particleField.rotation.y = t * 0.12;
+      particleField.position.y = Math.sin(t * 0.8) * 0.6;
+
+      // 4-Beat Camera & Scale Choreography
+      if (t < 2.5) {
+        // Beat 1: Dolly-in hero reveal
+        const p = t / 2.5;
+        camera.position.set(0, 0, 16 - p * 4);
+        coreGroup.position.set(0, 1.8, 0);
+        coreGroup.scale.setScalar(0.8 + p * 0.35);
+      } else if (t < 5.5) {
+        // Beat 2: Shift core upward to frame HUD metric cards below
+        const p = (t - 2.5) / 3.0;
+        camera.position.set(Math.sin(p * Math.PI) * 1.5, 0.4, 12);
+        coreGroup.position.set(0, 2.5, 0);
+        coreGroup.scale.setScalar(1.05);
+      } else if (t < 8.0) {
+        // Beat 3: High-energy Dutch angle & core expansion pulse
+        const p = (t - 5.5) / 2.5;
+        camera.position.set(0, 0, 10.5 - Math.sin(p * Math.PI * 4) * 0.8);
+        coreGroup.position.set(0, 0, 0);
+        const pulse = 1.15 + Math.sin(t * 14) * 0.12;
+        coreGroup.scale.setScalar(pulse);
+      } else {
+        // Beat 4: Clean pullback lockup for final CTA
+        const p = (t - 8.0) / 2.0;
+        camera.position.set(0, 0, 11.5 + p * 2.5);
+        coreGroup.position.set(0, 3.0, -1.5);
+        coreGroup.scale.setScalar(0.9);
+      }
+
+      camera.lookAt(0, 0.5, 0);
+      renderer.render(scene, camera);
+    }
+
+    // 4. GSAP Master Timeline Registration for HyperFrames
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+
+    // Initial state reset
+    gsap.set(['#beat-1', '#beat-2', '#beat-3', '#beat-4'], { autoAlpha: 0 });
+
+    // Beat 1 (0.0s - 2.5s)
+    tl.fromTo('#beat-1',
+      { autoAlpha: 0, scale: 0.82, y: 80 },
+      { autoAlpha: 1, scale: 1, y: 0, duration: 0.45, ease: 'power4.out' },
+      0
+    ).to('#beat-1',
+      { autoAlpha: 0, scale: 1.12, y: -60, duration: 0.35, ease: 'power3.in' },
+      2.15
+    );
+
+    // Beat 2 (2.5s - 5.5s)
+    tl.set('#beat-2', { autoAlpha: 1 }, 2.5)
+      .fromTo(['#card-1', '#card-2', '#card-3'],
+        { autoAlpha: 0, x: -120 },
+        { autoAlpha: 1, x: 0, duration: 0.4, stagger: 0.18, ease: 'back.out(1.4)' },
+        2.55
+      )
+      .to('#beat-2',
+        { autoAlpha: 0, y: 60, duration: 0.35, ease: 'power2.in' },
+        5.15
+      );
+
+    // Beat 3 (5.5s - 8.0s)
+    tl.set('#beat-3', { autoAlpha: 1 }, 5.5)
+      .fromTo('#laser-bar',
+        { top: '15%' },
+        { top: '85%', duration: 2.4, ease: 'sine.inOut' },
+        5.5
+      )
+      .fromTo('#strobe-text',
+        { scale: 0.7, autoAlpha: 0 },
+        { scale: 1.08, autoAlpha: 1, duration: 0.25, ease: 'expo.out' },
+        5.5
+      )
+      .to('#beat-3',
+        { autoAlpha: 0, scale: 1.25, duration: 0.3 },
+        7.7
+      );
+
+    // Beat 4 (8.0s - 10.0s)
+    tl.set('#beat-4', { autoAlpha: 1 }, 8.0)
+      .fromTo('#cta-card',
+        { autoAlpha: 0, scale: 0.85, y: 70 },
+        { autoAlpha: 1, scale: 1, y: 0, duration: 0.5, ease: 'back.out(1.6)' },
+        8.05
+      );
+
+    // Bind Three.js deterministic render to every timeline update
+    tl.eventCallback('onUpdate', () => {
+      renderAt(tl.time());
+    });
+
+    window.__timelines['main'] = tl;
+    window.__timelines['reel-main'] = tl;
+    window.__duration = 10;
+    window.__seek = function(t) {
+      tl.seek(t, false);
+      renderAt(t);
+    };
+
+    // 5. Listen for HyperFrames Headless Frame Seek Events
+    window.addEventListener('hf-seek', (event) => {
+      const targetTime = event.detail && typeof event.detail.time === 'number'
+        ? event.detail.time
+        : 0;
+      window.__seek(targetTime);
+    });
+
+    // Initial render at t = 0
+    renderAt(0);
+  </script>
+</body>
+</html>

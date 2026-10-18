@@ -1,0 +1,70 @@
+{
+ "film": "films/mubaraktech/mubaraktech_15s.mp4",
+ "duration": 15.0,
+ "fps": 30.0,
+ "gates": [
+  {
+   "id": "G0",
+   "name": "render exists",
+   "status": "PASS",
+   "detail": "duration 15.00 s matches --expect 15.00 s; audio stream present"
+  },
+  {
+   "id": "G2",
+   "name": "no empty frame",
+   "status": "PASS",
+   "detail": "no run of > 3 flat frames; 2 short dip(s) ignored: 3.70s, 11.23s"
+  },
+  {
+   "id": "G3",
+   "name": "end card hold, CTA share",
+   "status": "PASS",
+   "detail": "end hold 0.00 s: ends mid-motion (NOTE: fine when intended); final shot 3.73 s = 25 % of the film (<= 25 %)"
+  }
+ ],
+ "motion_mean_luma_diff": 5.16,
+ "human_band": {
+  "median": 6.8,
+  "q1": 4.4,
+  "q3": 9.8
+ },
+ "audio": {
+  "dur": 15.0,
+  "audible": [
+   0.0,
+   14.98
+  ],
+  "lead": 0.0,
+  "tail": 0.019999999999999574,
+  "dropouts": [],
+  "onsets": [
+   1.3800000000000001,
+   2.6,
+   2.7800000000000002,
+   4.23,
+   6.63,
+   6.7700000000000005,
+   7.49,
+   7.79,
+   11.700000000000001,
+   12.17,
+   12.540000000000001
+  ],
+  "silent": false,
+  "cut_offsets": [
+   [
+    3.7333333333333334,
+    0.49666666666666703
+   ],
+   [
+    11.266666666666667,
+    0.43333333333333357
+   ]
+  ]
+ },
+ "loudness": {
+  "integrated_lufs": "-15.3",
+  "lra_lu": "3.6",
+  "true_peak_dbfs": "-0.7"
+ }
+}

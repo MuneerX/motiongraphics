@@ -1,0 +1,5 @@
+# cuts from events films/mubaraktech/mubaraktech_15s.mp4.events.json (time s, frame, timecode, source)
+3.733	frame 112	0:03.73	event cut 'Color-Dip Cut to Shot 2 (Sakuga 3D)'
+11.267	frame 338	0:11.27	event cut 'Color-Dip Cut to Shot 3 (Brand Button)'
+# detected but not in events:
+7.800	frame 234	0:07.80	scene 0.14 + corr 0.26 spike x2.6

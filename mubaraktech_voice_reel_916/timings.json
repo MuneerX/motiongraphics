@@ -1,0 +1,142 @@
+{
+  "total_duration": 73.08,
+  "voice": "en-US-AndrewMultilingualNeural",
+  "segments": [
+    {
+      "id": 1,
+      "scene": "s1",
+      "text": "Steal the 2-minute voice memo replacing our client's $3,000 assistant.",
+      "start": 0.2,
+      "end": 5.29,
+      "duration": 5.09
+    },
+    {
+      "id": 2,
+      "scene": "s2",
+      "text": "Most agency founders lose two hours every single evening manually transcribing client audio notes and typing them into project management apps.",
+      "start": 5.69,
+      "end": 15.18,
+      "duration": 9.49
+    },
+    {
+      "id": 3,
+      "scene": "s3",
+      "text": "It's completely exhausting.",
+      "start": 15.53,
+      "end": 17.03,
+      "duration": 1.5
+    },
+    {
+      "id": 4,
+      "scene": "s4",
+      "text": "You're driving home, a client drops an urgent voice message, and you promise yourself you'll deal with it tomorrow morning.",
+      "start": 17.53,
+      "end": 24.21,
+      "duration": 6.68
+    },
+    {
+      "id": 5,
+      "scene": "s5",
+      "text": "And then you forget.",
+      "start": 24.51,
+      "end": 25.54,
+      "duration": 1.03
+    },
+    {
+      "id": 6,
+      "scene": "s6",
+      "text": "Three days later, the client is furious because nobody started the job.",
+      "start": 26.04,
+      "end": 30.42,
+      "duration": 4.38
+    },
+    {
+      "id": 7,
+      "scene": "s7",
+      "text": "Here's what our clients at MubarakTech do instead.",
+      "start": 30.92,
+      "end": 33.7,
+      "duration": 2.78
+    },
+    {
+      "id": 8,
+      "scene": "s8",
+      "text": "They forward that 60-second audio note to a private WhatsApp bot.",
+      "start": 34.1,
+      "end": 37.87,
+      "duration": 3.77
+    },
+    {
+      "id": 9,
+      "scene": "s9",
+      "text": "In forty seconds, three things happen automatically.",
+      "start": 38.22,
+      "end": 41.7,
+      "duration": 3.48
+    },
+    {
+      "id": 10,
+      "scene": "s10",
+      "text": "First, it extracts the deliverables and assigns them straight to your team with a hard deadline.",
+      "start": 42.15,
+      "end": 47.79,
+      "duration": 5.64
+    },
+    {
+      "id": 11,
+      "scene": "s11",
+      "text": "Second, it drafts a client recap for your one-tap review.",
+      "start": 48.19,
+      "end": 52.07,
+      "duration": 3.88
+    },
+    {
+      "id": 12,
+      "scene": "s12",
+      "text": "Third, it generates the Stripe invoice link automatically.",
+      "start": 52.47,
+      "end": 56.15,
+      "duration": 3.68
+    },
+    {
+      "id": 13,
+      "scene": "s13",
+      "text": "Zero manual typing.",
+      "start": 56.65,
+      "end": 58.07,
+      "duration": 1.42
+    },
+    {
+      "id": 14,
+      "scene": "s14",
+      "text": "Zero dropped deadlines.",
+      "start": 58.37,
+      "end": 59.88,
+      "duration": 1.51
+    },
+    {
+      "id": 15,
+      "scene": "s15",
+      "text": "Stop paying a $3,000 assistant for tasks a smart automation finishes in seconds.",
+      "start": 60.38,
+      "end": 66.26,
+      "duration": 5.88
+    },
+    {
+      "id": 16,
+      "scene": "s16",
+      "text": "Comment VOICE and I'll send you our exact template.",
+      "start": 66.71,
+      "end": 69.28,
+      "duration": 2.57
+    },
+    {
+      "id": 17,
+      "scene": "s17",
+      "text": "Steal the 2-minute voice memo.",
+      "start": 69.68,
+      "end": 71.58,
+      "duration": 1.9
+    }
+  ]
+}

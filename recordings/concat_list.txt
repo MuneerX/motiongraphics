@@ -1,0 +1,2 @@
+file 'shot1_admin_login_and_dashboard.mp4'
+file 'shot2_purchase_and_order_complete.mp4'

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Outship 9:16 Vertical Reel Starter Template</title>
+
+  <!-- Google Fonts: Instrument Serif, Plus Jakarta Sans, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- GSAP 3.12.5, TextPlugin & Three.js r128 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/TextPlugin.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    :root {
+      --cream: #FCF8F2;
+      --cream-card: #FFFDF9;
+      --cream-border: rgba(20, 18, 16, 0.08);
+      --obsidian: #0D0A09;
+      --obsidian-card: #161210;
+      --obsidian-border: rgba(255, 255, 255, 0.1);
+      --obsidian-glass: rgba(22, 18, 16, 0.95);
+      --terracotta: #DF5A37;
+      --terracotta-soft: #F4D7CE;
+      --terracotta-glow: rgba(223, 90, 55, 0.38);
+      --ink: #141210;
+      --muted: #78716C;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-serif: 'Instrument Serif', Georgia, serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body { width: 100%; height: 100%; background: #080706; color: #F5F2EB; font-family: var(--font-sans); overflow: hidden; }
+
+    /* HEADLESS RENDER MODE (Clean 1080x1920 without UI chrome) */
+    body.headless-render,
+    body.headless-render .studio-shell,
+    body.headless-render .viewport-area {
+      width: 1080px !important; height: 1920px !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: var(--obsidian) !important;
+    }
+    body.headless-render .studio-topbar,
+    body.headless-render .scene-strip,
+    body.headless-render .studio-controls { display: none !important; }
+    body.headless-render #root {
+      position: absolute !important; top: 0 !important; left: 0 !important; width: 1080px !important; height: 1920px !important; transform: none !important; box-shadow: none !important;
+    }
+
+    /* STUDIO SHELL */
+    .studio-shell { display: flex; flex-direction: column; width: 100vw; height: 100vh; }
+    .studio-topbar { height: 48px; background: #12100E; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 100; flex-shrink: 0; }
+    .studio-brand { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; }
+    .studio-badge { background: rgba(223, 90, 55, 0.16); color: #FF7A59; border: 1px solid rgba(223, 90, 55, 0.35); padding: 2px 8px; border-radius: 99px; font-size: 11px; font-family: var(--font-mono); }
+    .scene-strip { height: 38px; background: #0D0B0A; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 4px; padding: 0 12px; overflow-x: auto; scrollbar-width: none; flex-shrink: 0; }
+    .scene-strip::-webkit-scrollbar { display: none; }
+    .scene-pill { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: #A8A29E; font-size: 11px; padding: 4px 10px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-family: var(--font-mono); }
+    .scene-pill.active { background: rgba(223, 90, 55, 0.2); border-color: var(--terracotta); color: #FF7A59; font-weight: 600; }
+    .viewport-area { flex: 1; display: flex; align-items: center; justify-content: center; background: #080706; position: relative; overflow: hidden; }
+
+    /* 1080x1920 CANVAS ROOT */
+    #root {
+      position: relative; width: 1080px; height: 1920px; background: var(--cream); overflow: hidden; transform-origin: center center; box-shadow: 0 40px 100px rgba(0,0,0,0.9); perspective: 1400px;
+    }
+    #canvas-bg { position: absolute; inset: 0; width: 1080px; height: 1920px; background: var(--cream); z-index: 0; }
+    #three-stage { position: absolute; inset: 0; width: 1080px; height: 1920px; pointer-events: none; z-index: 2; }
+    #dom-stage-3d { position: absolute; inset: 0; width: 1080px; height: 1920px; transform-style: preserve-3d; will-change: transform; z-index: 5; }
+
+    /* SCENE LAYERS */
+    .scene-layer {
+      position: absolute; inset: 0; width: 1080px; height: 1920px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 180px 70px 260px; opacity: 0; visibility: hidden; transform-style: preserve-3d; will-change: transform, opacity;
+    }
+    .editorial-serif { font-family: var(--font-serif); font-style: italic; font-weight: 400; }
+    .category-badge {
+      display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 14px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--terracotta); background: rgba(223, 90, 55, 0.1); border: 1px solid rgba(223, 90, 55, 0.28); padding: 7px 18px; border-radius: 99px; margin-bottom: 28px;
+    }
+    .hero-title { font-size: 64px; line-height: 1.18; letter-spacing: -0.03em; font-weight: 700; text-align: center; color: #F7F4EE; max-width: 860px; }
+    .hero-title.dark { color: var(--ink); }
+    .hero-sub { font-size: 26px; line-height: 1.45; color: var(--muted); text-align: center; max-width: 760px; margin-top: 24px; }
+
+    /* CARD MOTIFS */
+    .hero-card {
+      width: 780px; background: var(--cream-card); border: 1px solid var(--cream-border); border-radius: 28px; padding: 40px; box-shadow: 0 24px 60px rgba(0,0,0,0.06); margin-top: 48px; position: relative;
+    }
+    .hero-card.dark-glass {
+      background: var(--obsidian-card); border-color: var(--obsidian-border); box-shadow: 0 32px 80px rgba(0,0,0,0.7), inset 0 1px 18px rgba(223, 90, 55, 0.18); color: #F5F2EB;
+    }
+    .terminal-box {
+      font-family: var(--font-mono); font-size: 20px; line-height: 1.6; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px; width: 100%; color: #38BDF8;
+    }
+
+    /* CONTROLS */
+    .studio-controls { height: 64px; background: #12100E; border-top: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 14px; padding: 0 20px; z-index: 100; flex-shrink: 0; }
+    .ctrl-btn { background: #1F1B18; border: 1px solid rgba(255,255,255,0.12); color: #F5F2EB; height: 36px; padding: 0 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+    .ctrl-btn.primary { background: var(--terracotta); border-color: var(--terracotta); color: #fff; }
+    .scrubber-wrap { flex: 1; display: flex; align-items: center; gap: 12px; }
+    #timeline-slider { flex: 1; accent-color: var(--terracotta); height: 6px; cursor: pointer; }
+    .time-readout { font-family: var(--font-mono); font-size: 13px; color: #D6D3CD; min-width: 140px; text-align: right; }
+  </style>
+</head>
+<body>
+<div class="studio-shell">
+  <header class="studio-topbar">
+    <div class="studio-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="11" height="11" fill="#DF5A37"/><rect x="10" y="10" width="11" height="11" stroke="#F5F2EB" stroke-width="2.5"/></svg>
+      <span>Outship Vertical Reel Template (9:16)</span>
+      <span class="studio-badge">1080×1920 • 30 FPS</span>
+    </div>
+  </header>
+  <nav class="scene-strip" id="scene-strip"></nav>
+  <main class="viewport-area" id="viewport-area">
+    <div id="root" data-composition-id="main" data-start="0" data-duration="15" data-width="1080" data-height="1920">
+      <div id="canvas-bg"></div>
+      <div id="three-stage"></div>
+      <div id="dom-stage-3d">
+
+        <!-- SCENE 1: Warm Cream Brand Opening -->
+        <section class="scene-layer" id="s1">
+          <div class="category-badge">✦ Product Reveal</div>
+          <h1 class="hero-title dark">Turn your vision into reality <span class="editorial-serif" style="color:var(--terracotta);">in seconds</span></h1>
+          <p class="hero-sub">Deterministic procedural motion graphics for modern product engineering.</p>
+          <div class="hero-card" id="s1-card">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+              <span style="font-family:var(--font-mono); font-size:14px; font-weight:600; color:var(--terracotta);">PIPELINE READY</span>
+              <span style="font-size:13px; color:var(--muted);">1080×1920 60FPS</span>
+            </div>
+            <div style="font-size:22px; font-weight:600; color:var(--ink);">Autonomous Motion Engine Active</div>
+          </div>
+        </section>
+
+        <!-- SCENE 2: Dark Obsidian Terminal & Live Typewriting -->
+        <section class="scene-layer" id="s2">
+          <div class="category-badge" style="background:rgba(223,90,55,0.18);">⚡ Real-Time Engine</div>
+          <h1 class="hero-title">Watch intelligence <span class="editorial-serif" style="color:var(--terracotta);">execute live</span></h1>
+          <div class="hero-card dark-glass" id="s2-card" style="margin-top:36px;">
+            <div class="terminal-box">
+              <div style="color:#A8A29E; font-size:14px; margin-bottom:8px;">$ dispatch-agent --stream</div>
+              <div id="s2-typed-line" style="color:#38BDF8; min-height:32px;"></div>
+            </div>
+            <div id="s2-alert" style="margin-top:20px; display:inline-flex; align-items:center; gap:8px; background:rgba(239,68,68,0.15); border:1px solid #EF4444; color:#F87171; padding:8px 16px; border-radius:10px; font-size:15px; font-family:var(--font-mono); opacity:0;">
+              🚨 100% Deterministic Sync Verified
+            </div>
+          </div>
+        </section>
+
+        <!-- SCENE 3: CTA & Final Lockup -->
+        <section class="scene-layer" id="s3">
+          <div class="category-badge">✨ Ready to Build</div>
+          <h1 class="hero-title dark">Comment <span class="editorial-serif" style="color:var(--terracotta);">START</span> to launch</h1>
+          <div class="hero-card" id="s3-card" style="text-align:center;">
+            <div style="font-size:24px; font-weight:700; color:var(--ink); margin-bottom:12px;">Get the exact starter blueprint</div>
+            <div style="display:inline-flex; align-items:center; gap:12px; background:#141210; color:#fff; padding:14px 28px; border-radius:12px; font-weight:600; font-size:18px;">
+              <span>Claim Free Template →</span>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+  <footer class="studio-controls">
+    <button class="ctrl-btn primary" id="btn-play">▶ Play</button>
+    <div class="scrubber-wrap"><input type="range" id="timeline-slider" min="0" max="15" step="0.02" value="0" /></div>
+    <div class="time-readout" id="time-readout">00:00.00 / 00:15.00</div>
+  </footer>
+</div>
+
+<script>
+  gsap.registerPlugin(TextPlugin);
+
+  const TOTAL_DURATION = 15.0;
+  window.__duration = TOTAL_DURATION;
+
+  if (navigator.webdriver || window.location.search.includes('render=true') || window.location.search.includes('render=1')) {
+    document.body.classList.add('headless-render');
+  }
+
+  // 1. Three.js Background Stage
+  const threeStage = document.getElementById('three-stage');
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50, 1080 / 1920, 0.1, 3000);
+  camera.position.set(0, 0, 800);
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  renderer.setSize(1080, 1920, false);
+  threeStage.appendChild(renderer.domElement);
+
+  const motesGeo = new THREE.BufferGeometry();
+  const motesPos = new Float32Array(120 * 3);
+  for (let i = 0; i < 120 * 3; i += 3) {
+    motesPos[i] = (Math.random() - 0.5) * 1200;
+    motesPos[i+1] = (Math.random() - 0.5) * 1800;
+    motesPos[i+2] = (Math.random() - 0.5) * 800;
+  }
+  motesGeo.setAttribute('position', new THREE.BufferAttribute(motesPos, 3));
+  const motesMat = new THREE.PointsMaterial({ color: 0xDF5A37, size: 5, transparent: true, opacity: 0.45 });
+  const motes = new THREE.Points(motesGeo, motesMat);
+  scene.add(motes);
+
+  function renderThree(t) {
+    motes.rotation.y = t * 0.04;
+    motes.position.y = Math.sin(t * 0.5) * 30;
+    renderer.render(scene, camera);
+  }
+
+  // 2. Master GSAP Timeline with Overlapping Transitions
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  const scenes = [
+    { id: '#s1', start: 0.0, end: 5.0, bg: '#FCF8F2' },
+    { id: '#s2', start: 4.8, end: 10.2, bg: '#0D0A09' },
+    { id: '#s3', start: 10.0, end: 15.0, bg: '#FCF8F2' }
+  ];
+
+  // Overlapping Scene Fade & Glide Transitions
+  scenes.forEach((sc, idx) => {
+    const el = sc.id;
+    const isFirst = (idx === 0);
+    const isLast = (idx === scenes.length - 1);
+    const fadeInT = isFirst ? sc.start : Math.max(0, sc.start - 0.4);
+    const fadeOutT = isLast ? sc.end : sc.end - 0.45;
+
+    tl.fromTo(el, 
+      { autoAlpha: 0, y: 35, scale: 0.96 }, 
+      { autoAlpha: 1, y: 0, scale: 1.0, duration: 0.55, ease: 'power2.out' }, 
+      fadeInT
+    );
+
+    if (!isLast) {
+      tl.to(el, { autoAlpha: 0, y: -35, scale: 0.96, duration: 0.5, ease: 'power2.in' }, fadeOutT);
+    }
+
+    // Deterministic canvas background color tweening
+    if (!isFirst) {
+      tl.to(['#canvas-bg', '#root'], { backgroundColor: sc.bg, duration: 0.5, ease: 'power2.inOut' }, sc.start - 0.25);
+    }
+  });
+
+  // Scene 1 Content Tweens
+  tl.fromTo('#s1 .hero-title', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }, 0.2)
+    .fromTo('#s1-card', { scale: 0.88, y: 50, opacity: 0 }, { scale: 1.0, y: 0, opacity: 1, duration: 0.75, ease: 'back.out(1.6)' }, 0.5);
+
+  // Scene 2 Content Tweens (Typewriting + Alert Pill)
+  tl.fromTo('#s2 .hero-title', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }, 5.1)
+    .fromTo('#s2-card', { scale: 0.88, y: 50, opacity: 0 }, { scale: 1.0, y: 0, opacity: 1, duration: 0.75, ease: 'back.out(1.6)' }, 5.3)
+    .to('#s2-typed-line', { text: { value: 'Executing autonomous pipeline: dispatching 3 jobs...', delimiter: '' }, duration: 2.2, ease: 'none' }, 5.8)
+    .fromTo('#s2-alert', { scale: 0.6, opacity: 0 }, { scale: 1.0, opacity: 1, duration: 0.5, ease: 'back.out(1.8)' }, 8.2);
+
+  // Scene 3 Content Tweens (CTA Card)
+  tl.fromTo('#s3 .hero-title', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }, 10.3)
+    .fromTo('#s3-card', { scale: 0.88, y: 50, opacity: 0 }, { scale: 1.0, y: 0, opacity: 1, duration: 0.75, ease: 'back.out(1.6)' }, 10.6);
+
+  // 3. Playback & Seek Contracts
+  tl.eventCallback('onUpdate', () => {
+    const t = tl.time();
+    renderThree(t);
+    document.getElementById('timeline-slider').value = t;
+    updateTimeReadout(t);
+  });
+
+  window.__timelines['main'] = tl;
+  window.__seek = (t) => {
+    t = Math.max(0, Math.min(TOTAL_DURATION, t));
+    tl.seek(t, false);
+    renderThree(t);
+  };
+  window.addEventListener('hf-seek', e => window.__seek(e.detail.time));
+
+  function updateTimeReadout(t) {
+    const m = Math.floor(t / 60);
+    const s = Math.floor(t % 60);
+    const ms = Math.floor((t % 1) * 100);
+    const totM = Math.floor(TOTAL_DURATION / 60);
+    const totS = Math.floor(TOTAL_DURATION % 60);
+    document.getElementById('time-readout').textContent =
+      `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(ms).padStart(2,'0')} / ${String(totM).padStart(2,'0')}:${String(totS).padStart(2,'0')}.00`;
+  }
+
+  // 4. Studio Navigation & Responsive Scaling
+  const sceneStrip = document.getElementById('scene-strip');
+  scenes.forEach((sc, i) => {
+    const pill = document.createElement('div');
+    pill.className = `scene-pill ${i === 0 ? 'active' : ''}`;
+    pill.textContent = `Scene ${i+1} (${sc.start.toFixed(1)}s)`;
+    pill.addEventListener('click', () => { window.__seek(sc.start); });
+    sceneStrip.appendChild(pill);
+  });
+
+  document.getElementById('timeline-slider').addEventListener('input', (e) => {
+    window.__seek(parseFloat(e.target.value));
+  });
+
+  const btnPlay = document.getElementById('btn-play');
+  let isPlaying = false;
+  btnPlay.addEventListener('click', () => {
+    if (isPlaying) { tl.pause(); btnPlay.textContent = '▶ Play'; }
+    else { tl.play(); btnPlay.textContent = '⏸ Pause'; }
+    isPlaying = !isPlaying;
+  });
+
+  function fit() {
+    if (document.body.classList.contains('headless-render')) return;
+    const a = document.getElementById('viewport-area'), r = document.getElementById('root');
+    const scale = Math.min((a.clientWidth - 40) / 1080, (a.clientHeight - 40) / 1920, 1.0);
+    r.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', fit);
+  fit();
+  window.__seek(0);
+</script>
+</body>
+</html>

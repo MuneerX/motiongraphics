@@ -1,0 +1,1905 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <title>Antigravity - High-End Kinetic Motion Graphics</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500;1,6..72,600&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #030712;
+        color: #fff;
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        overflow: hidden;
+      }
+      #root {
+        position: relative;
+        width: 1280px;
+        height: 720px;
+        overflow: hidden;
+        background: #020617;
+        perspective: 1400px;
+      }
+      .scene {
+        position: absolute;
+        inset: 0;
+        width: 1280px;
+        height: 720px;
+        overflow: hidden;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transform-style: preserve-3d;
+      }
+      .camera-rig {
+        position: absolute;
+        inset: 0;
+        width: 1280px;
+        height: 720px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transform-style: preserve-3d;
+        pointer-events: none;
+      }
+      .card-bg-img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.45;
+        pointer-events: none;
+      }
+      .card-scrim {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.35) 0%, rgba(15, 23, 42, 0.88) 100%);
+        pointer-events: none;
+      }
+
+      /* ==================== GLOBAL UTILITIES & BACKGROUNDS ==================== */
+      .sky-bg {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, #165b94 0%, #2979b9 35%, #5da4dc 70%, #aadefd 100%);
+      }
+      .sun-glare {
+        position: absolute;
+        top: -80px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 600px;
+        height: 400px;
+        background: radial-gradient(circle at 50% 20%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 70%);
+        pointer-events: none;
+      }
+      .mountain-silhouette {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 220px;
+        opacity: 0.35;
+        pointer-events: none;
+      }
+      .cloud-shape {
+        position: absolute;
+        background: #ffffff;
+        border-radius: 9999px;
+        opacity: 0.9;
+      }
+
+      .studio-bg {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 50% 40%, #ffffff 0%, #edf3fa 55%, #dbe6f3 100%);
+      }
+      .grid-pattern {
+        position: absolute;
+        inset: 0;
+        background-size: 40px 40px;
+        background-image: 
+          linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+        pointer-events: none;
+      }
+
+      .space-bg {
+        position: absolute;
+        inset: 0;
+        background: #020409;
+      }
+      .stars-container {
+        position: absolute;
+        inset: 0;
+        background-image: 
+          radial-gradient(1.5px 1.5px at 100px 150px, #ffffff, transparent),
+          radial-gradient(1.5px 1.5px at 250px 80px, #93c5fd, transparent),
+          radial-gradient(2px 2px at 450px 220px, #ffffff, transparent),
+          radial-gradient(1px 1px at 700px 100px, #ffffff, transparent),
+          radial-gradient(2px 2px at 900px 180px, #bfdbfe, transparent),
+          radial-gradient(1.5px 1.5px at 1150px 90px, #ffffff, transparent),
+          radial-gradient(1.5px 1.5px at 150px 350px, #ffffff, transparent),
+          radial-gradient(2px 2px at 850px 320px, #ffffff, transparent),
+          radial-gradient(1px 1px at 1050px 280px, #93c5fd, transparent);
+      }
+
+      .italic-serif {
+        font-family: 'Newsreader', Georgia, serif;
+        font-style: italic;
+        font-weight: 400;
+      }
+
+      /* ==================== SCENE 1: HOOK (0.0s – 3.82s) ==================== */
+      .sc1-title-group {
+        position: relative;
+        z-index: 10;
+        text-align: center;
+      }
+      .sc1-badge-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 18px;
+        border-radius: 9999px;
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 18px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      }
+      .sc1-what-if {
+        font-size: 60px;
+        font-weight: 800;
+        color: #ffffff;
+        text-shadow: 0 4px 24px rgba(0,0,0,0.25);
+        margin-bottom: 8px;
+        letter-spacing: -0.02em;
+      }
+      .sc1-videos-line {
+        font-size: 86px;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        line-height: 1.05;
+      }
+      .sc1-could-make {
+        color: #f8fafc;
+        text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      }
+      .sc1-videos-gradient {
+        background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 45%, #06b6d4 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+        filter: drop-shadow(0 4px 18px rgba(37, 99, 235, 0.45));
+        position: relative;
+      }
+      .sc1-like-mine {
+        font-size: 82px;
+        color: #0f172a;
+        margin-left: 14px;
+      }
+
+      /* ==================== SCENE 2: STEPPER (3.82s – 6.50s) ==================== */
+      .stepper-card {
+        width: 620px;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(28px);
+        -webkit-backdrop-filter: blur(28px);
+        border: 1.5px solid rgba(255, 255, 255, 0.95);
+        border-radius: 32px;
+        padding: 44px 54px;
+        box-shadow: 0 25px 60px rgba(30, 58, 138, 0.12), 0 0 0 1px rgba(0,0,0,0.03);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        position: relative;
+        z-index: 10;
+      }
+      .stepper-header-tag {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        font-weight: 700;
+        color: #2563eb;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 4px;
+      }
+      .step-item {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 12px 18px;
+        border-radius: 16px;
+        font-size: 36px;
+        font-weight: 700;
+        color: #94a3b8;
+        letter-spacing: -0.02em;
+        background: transparent;
+      }
+      .step-item.active {
+        color: #0f172a;
+        background: #f1f5f9;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      }
+      .step-icon-box {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+      }
+      .step-item.active .step-icon-box {
+        background: #2563eb;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+      }
+
+      /* ==================== SCENE 3: SKILL.MD REVEAL (6.50s – 9.00s) ==================== */
+      .sc3-layout {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 1080px;
+        z-index: 10;
+      }
+      .sc3-copy {
+        width: 460px;
+      }
+      .sc3-just-this {
+        font-size: 38px;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 8px;
+      }
+      .sc3-a-skill-file {
+        font-size: 72px;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.04em;
+        line-height: 1.05;
+      }
+      .sc3-a-skill-file span {
+        color: #2563eb;
+        text-shadow: 0 4px 25px rgba(37, 99, 235, 0.3);
+      }
+      .sc3-card-viewport {
+        width: 520px;
+        height: 520px;
+        perspective: 1200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .skill-doc-card {
+        width: 400px;
+        height: 500px;
+        background: #ffffff;
+        border-radius: 22px;
+        padding: 38px;
+        box-shadow: 0 35px 70px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.05);
+        transform: rotateY(-14deg) rotateX(8deg) rotateZ(-3deg);
+        transform-style: preserve-3d;
+        position: relative;
+      }
+      .skill-doc-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+      .skill-brand-lock {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .skill-doc-title {
+        font-size: 40px;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.03em;
+      }
+      .skill-spec-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 700;
+        color: #16a34a;
+        background: #dcfce7;
+        padding: 3px 8px;
+        border-radius: 6px;
+      }
+      .skill-doc-tag {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13.5px;
+        font-weight: 600;
+        color: #ea580c;
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        padding: 4px 10px;
+        border-radius: 8px;
+        display: inline-block;
+        margin-bottom: 20px;
+      }
+      .skill-doc-yaml {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        color: #334155;
+        line-height: 1.65;
+        border-top: 1.5px solid #f1f5f9;
+        padding-top: 18px;
+        margin-bottom: 24px;
+        background: #f8fafc;
+        padding: 14px 16px;
+        border-radius: 12px;
+      }
+      .skill-doc-yaml .y-key { color: #64748b; font-weight: 500; }
+      .skill-doc-yaml .y-val { color: #2563eb; font-weight: 600; }
+      .skill-skeleton-line {
+        height: 9px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        margin-bottom: 12px;
+      }
+      .bounding-box {
+        position: absolute;
+        inset: -14px;
+        border: 2px solid #2563eb;
+        border-radius: 28px;
+        pointer-events: none;
+      }
+      .box-handle {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        background: #ffffff;
+        border: 2px solid #2563eb;
+        border-radius: 3px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      }
+      .bh-tl { top: -6px; left: -6px; }
+      .bh-tr { top: -6px; right: -6px; }
+      .bh-bl { bottom: -6px; left: -6px; }
+      .bh-br { bottom: -6px; right: -6px; }
+      .bounding-pill {
+        position: absolute;
+        top: -18px;
+        left: 24px;
+        background: #2563eb;
+        color: #fff;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 6px;
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.4);
+      }
+      .mouse-cursor-svg {
+        position: absolute;
+        bottom: 40px;
+        right: 40px;
+        filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
+      }
+
+      /* ==================== SCENE 4: 3D LAPTOP & MODEL SELECTOR (9.0s – 14.0s) ==================== */
+      .laptop-wrapper {
+        position: relative;
+        width: 780px;
+        height: 500px;
+        perspective: 1200px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 10;
+      }
+      .laptop-screen {
+        width: 700px;
+        height: 440px;
+        background: #0b0f19;
+        border: 12px solid #334155;
+        border-radius: 20px 20px 4px 4px;
+        box-shadow: 0 35px 90px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        position: relative;
+      }
+      .laptop-base {
+        width: 840px;
+        height: 24px;
+        background: linear-gradient(180deg, #64748b 0%, #475569 50%, #1e293b 100%);
+        border-radius: 0 0 26px 26px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.35);
+        position: relative;
+      }
+      .laptop-notch {
+        width: 96px;
+        height: 6px;
+        background: #1e293b;
+        border-radius: 0 0 6px 6px;
+        margin: 0 auto;
+      }
+      .laptop-cam {
+        position: absolute;
+        top: 6px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #020617;
+        border: 1px solid #1e293b;
+        z-index: 20;
+      }
+      .ide-window {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        background: #0f172a;
+      }
+      .ide-titlebar {
+        height: 38px;
+        background: #0b0f19;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        gap: 8px;
+      }
+      .window-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .wd-red { background: #ef4444; }
+      .wd-yellow { background: #eab308; }
+      .wd-green { background: #22c55e; }
+      .ide-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        color: #94a3b8;
+        margin-left: 12px;
+      }
+      .ide-main-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: radial-gradient(circle at center, #1e293b 0%, #090d16 100%);
+      }
+      .prompt-box {
+        width: 610px;
+        background: rgba(30, 41, 59, 0.95);
+        border: 1.5px solid rgba(255, 255, 255, 0.15);
+        border-radius: 18px;
+        padding: 20px 24px;
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+        position: relative;
+      }
+      .prompt-text-line {
+        font-size: 16px;
+        color: #f8fafc;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 20px;
+        max-width: 270px;
+        line-height: 1.35;
+      }
+      .prompt-bar-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding-top: 14px;
+      }
+      .model-pill-button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #2563eb;
+        color: #fff;
+        padding: 7px 16px;
+        border-radius: 9999px;
+        font-size: 13.5px;
+        font-weight: 700;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+      }
+      .model-dropdown-menu {
+        position: absolute;
+        top: 60px;
+        right: 32px;
+        width: 300px;
+        background: #0f172a;
+        border: 1.5px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        padding: 10px;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.7);
+        z-index: 50;
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      .dropdown-item {
+        padding: 10px 14px;
+        border-radius: 12px;
+        margin-bottom: 6px;
+      }
+      .dropdown-item.active {
+        background: rgba(37, 99, 235, 0.25);
+        border: 1.5px solid #2563eb;
+      }
+      .dropdown-item-title {
+        font-size: 14.5px;
+        font-weight: 700;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .dropdown-badge {
+        background: #2563eb;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 800;
+        padding: 2px 7px;
+        border-radius: 6px;
+      }
+      .dropdown-item-sub {
+        font-size: 11.5px;
+        color: #94a3b8;
+        margin-top: 2px;
+      }
+
+      /* Floating side pills */
+      .side-pill {
+        position: absolute;
+        padding: 14px 30px;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.28);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1.5px solid rgba(255, 255, 255, 0.65);
+        color: #ffffff;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+      }
+      .sp-left { left: 40px; top: 320px; }
+      .sp-right { right: 40px; top: 320px; }
+
+      /* ==================== SCENE 5: WATCH PUNCH (14.0s – 15.0s) ==================== */
+      .watch-badge {
+        font-size: 78px;
+        font-weight: 800;
+        padding: 22px 68px;
+        border-radius: 9999px;
+        background: #2563eb;
+        color: #ffffff;
+        box-shadow: 0 0 100px rgba(37, 99, 235, 0.85), 0 25px 50px rgba(0,0,0,0.5);
+        letter-spacing: -0.03em;
+        z-index: 20;
+      }
+
+      /* ==================== SCENE 6: THREE SITES ($12,000) (15.0s – 19.5s) ==================== */
+      .sc6-heading {
+        position: absolute;
+        top: 36px;
+        text-align: center;
+        width: 100%;
+        font-size: 46px;
+        font-weight: 800;
+        color: #0f172a;
+        z-index: 10;
+        letter-spacing: -0.03em;
+      }
+      .sc6-heading span {
+        color: #2563eb;
+      }
+      .cards-3d-stage {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 30px;
+        perspective: 1100px;
+        margin-top: 50px;
+        z-index: 10;
+      }
+      .web-card {
+        width: 330px;
+        height: 230px;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.18);
+        position: relative;
+        background: #ffffff;
+        border: 2px solid #e2e8f0;
+      }
+      .wc-left {
+        background: #0f172a;
+        transform: rotateY(18deg) scale(0.9);
+        border: 2px solid #86efac;
+      }
+      .wc-center {
+        width: 440px;
+        height: 290px;
+        background: #09090b;
+        border: 3px solid #2563eb;
+        box-shadow: 0 40px 80px rgba(37, 99, 235, 0.3);
+        z-index: 15;
+      }
+      .wc-right {
+        background: #0f172a;
+        transform: rotateY(-18deg) scale(0.9);
+        border: 2px solid #fed7aa;
+      }
+      .price-tag {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        background: #2563eb;
+        color: #fff;
+        font-weight: 800;
+        font-size: 15px;
+        padding: 5px 14px;
+        border-radius: 9999px;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.45);
+      }
+      .card-inspector-pill {
+        position: absolute;
+        background: rgba(15, 23, 42, 0.9);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        color: #38bdf8;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 6px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+      }
+
+      /* ==================== SCENE 7: ANTIGRAVITY IDE WORKSPACE (19.5s – 24.2s) ==================== */
+      .sc7-workspace {
+        width: 1060px;
+        height: 570px;
+        background: #0f172a;
+        border-radius: 22px;
+        border: 1.5px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 40px 90px rgba(0, 0, 0, 0.55);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        z-index: 10;
+      }
+      .sc7-split {
+        flex: 1;
+        display: flex;
+      }
+      .sc7-code-pane {
+        width: 48%;
+        background: #0b0f19;
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 24px 28px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13.5px;
+        color: #e2e8f0;
+        line-height: 1.75;
+      }
+      .sc7-code-pane .kw { color: #f43f5e; font-weight: 700; }
+      .sc7-code-pane .fn { color: #38bdf8; font-weight: 600; }
+      .sc7-code-pane .str { color: #34d399; }
+      .sc7-code-pane .prop { color: #fbbf24; }
+      .sc7-preview-pane {
+        width: 52%;
+        background: #000000;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .sc7-status-list {
+        position: absolute;
+        bottom: 24px;
+        right: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .sc7-status-pill {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(14px);
+        color: #1e293b;
+        font-size: 13.5px;
+        font-weight: 700;
+        padding: 7px 16px;
+        border-radius: 9999px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+      }
+
+      /* ==================== SCENE 8 & 9: INFINITE WALL & CAROUSEL ==================== */
+      .wall-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 310px);
+        grid-gap: 22px;
+        transform: rotateX(15deg) rotateY(-10deg) scale(0.9);
+      }
+      .wall-card {
+        height: 185px;
+        background: #1e293b;
+        border-radius: 16px;
+        border: 1.5px solid rgba(255, 255, 255, 0.12);
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      }
+      .switcher-pill {
+        position: absolute;
+        top: 40px;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(18px);
+        padding: 8px 20px;
+        border-radius: 9999px;
+        display: flex;
+        gap: 18px;
+        font-weight: 700;
+        font-size: 15px;
+        color: #475569;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
+        z-index: 20;
+      }
+      .switcher-tab.active {
+        color: #2563eb;
+      }
+
+      .carousel-fan {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        perspective: 1200px;
+        margin-top: 40px;
+        z-index: 10;
+      }
+      .fan-item {
+        position: absolute;
+        width: 350px;
+        height: 230px;
+        background: #0f172a;
+        border: 2px solid rgba(255, 255, 255, 0.18);
+        border-radius: 18px;
+        box-shadow: 0 30px 70px rgba(0,0,0,0.55);
+        overflow: hidden;
+      }
+
+      /* Scene 8 Wall Cards UI */
+      .wall-card-inner {
+        padding: 12px 14px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .wall-card-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .wall-dots {
+        display: flex;
+        gap: 4px;
+      }
+      .wall-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.3);
+      }
+      .wall-tag {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9px;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: rgba(255,255,255,0.12);
+        color: rgba(255,255,255,0.8);
+      }
+      .wall-card-title {
+        font-size: 16px;
+        font-weight: 800;
+        color: #ffffff;
+        letter-spacing: -0.02em;
+      }
+      .wall-card-sub {
+        font-size: 10px;
+        color: rgba(255,255,255,0.6);
+        margin-top: 1px;
+      }
+      .wall-card-art {
+        height: 52px;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.06);
+        border: 1px dashed rgba(255,255,255,0.15);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 10px;
+      }
+      .wall-stat {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        font-weight: 700;
+        color: #38bdf8;
+      }
+      .wall-btn {
+        font-size: 9px;
+        font-weight: 700;
+        background: rgba(255,255,255,0.15);
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 6px;
+      }
+
+      /* Scene 9 Fan Items */
+      .fan-card-inner {
+        padding: 16px 20px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .fan-card-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .fan-tag {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: rgba(37, 99, 235, 0.25);
+        color: #60a5fa;
+        border: 1px solid rgba(37, 99, 235, 0.4);
+      }
+      .fan-card-title {
+        font-size: 22px;
+        font-weight: 800;
+        color: #fff;
+        letter-spacing: -0.03em;
+        line-height: 1.15;
+      }
+      .fan-card-sub {
+        font-size: 11px;
+        color: #94a3b8;
+        margin-top: 4px;
+      }
+      .fan-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 8px;
+        border-top: 1px solid rgba(255,255,255,0.08);
+      }
+
+      /* ==================== SCENE 10: ANTIGRAVITY HERO LOCKUP ==================== */
+      .hero-lockup-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        z-index: 10;
+        transform-style: preserve-3d;
+      }
+      .atom-3d-stage {
+        width: 120px;
+        height: 120px;
+        position: relative;
+        transform-style: preserve-3d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 10px auto;
+      }
+      .atom-nucleus {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #ea580c;
+        box-shadow: 0 0 25px rgba(234, 88, 12, 0.9);
+        position: absolute;
+      }
+      .atom-ring {
+        position: absolute;
+        width: 110px;
+        height: 44px;
+        border-radius: 50%;
+        border: 2.8px solid #ea580c;
+        transform-style: preserve-3d;
+      }
+      .atom-ring-1 { transform: rotateX(65deg) rotateZ(0deg); }
+      .atom-ring-2 { transform: rotateX(65deg) rotateZ(60deg); }
+      .atom-ring-3 { transform: rotateX(65deg) rotateZ(120deg); }
+      .hero-brand-title {
+        font-size: 100px;
+        font-weight: 800;
+        color: #1e293b;
+        letter-spacing: -0.04em;
+        line-height: 1;
+        margin: 22px 0 10px 0;
+      }
+      .hero-brand-sub {
+        font-size: 42px;
+        font-weight: 500;
+        color: #475569;
+        letter-spacing: -0.02em;
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+      }
+      .hero-brand-sub .italic-serif {
+        font-size: 50px;
+        color: #ea580c;
+      }
+
+      /* ==================== SCENE 12: DEEP SPACE EARTH HORIZON ==================== */
+      .earth-horizon-arc {
+        position: absolute;
+        bottom: -460px;
+        left: -160px;
+        width: 1600px;
+        height: 600px;
+        border-radius: 50%;
+        border-top: 4px solid #38bdf8;
+        box-shadow: 0 -15px 60px 20px rgba(37, 99, 235, 0.6), 0 -5px 25px 5px rgba(56, 189, 248, 0.8);
+        background: radial-gradient(circle at 50% 0%, #0369a1 0%, #020617 70%);
+      }
+      .cosmic-text {
+        position: relative;
+        z-index: 20;
+        text-align: center;
+      }
+      .cosmic-line1 {
+        font-size: 48px;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 8px;
+      }
+      .cosmic-line1 span {
+        background: #2563eb;
+        padding: 2px 16px;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(37, 99, 235, 0.6);
+      }
+      .cosmic-no-way {
+        font-size: 100px;
+        font-weight: 800;
+        color: #ffffff;
+        letter-spacing: -0.03em;
+        text-shadow: 0 0 50px rgba(56, 189, 248, 0.7);
+      }
+
+      /* ==================== SCENE 13: DM CARD ==================== */
+      .dm-card {
+        width: 640px;
+        background: #ffffff;
+        border-radius: 26px;
+        padding: 38px;
+        box-shadow: 0 35px 80px rgba(0, 0, 0, 0.16);
+        z-index: 10;
+      }
+      .dm-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        border-bottom: 1.5px solid #f1f5f9;
+        padding-bottom: 20px;
+        margin-bottom: 24px;
+      }
+      .dm-avatar {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background: #1e293b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 700;
+        font-size: 20px;
+      }
+      .dm-bubble {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 16px 22px;
+        font-size: 17.5px;
+        color: #334155;
+        margin-bottom: 18px;
+      }
+      .dm-attachment {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 14px 20px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+      }
+
+      /* ==================== SCENE 14: PIXEL MASCOT & SCARCITY 200 ==================== */
+      .mascot-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 40px;
+        z-index: 10;
+      }
+      .giant-200 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 160px;
+        font-weight: 800;
+        color: #2563eb;
+        letter-spacing: -0.04em;
+        text-shadow: 0 10px 45px rgba(37, 99, 235, 0.45);
+        line-height: 1;
+      }
+      .paid-stamp {
+        font-size: 88px;
+        font-weight: 900;
+        color: #ef4444;
+        border: 8px solid #ef4444;
+        border-radius: 20px;
+        padding: 10px 40px;
+        transform: rotate(-12deg);
+        box-shadow: 0 10px 35px rgba(239, 68, 68, 0.35);
+        opacity: 0;
+      }
+
+      /* ==================== SCENE 15: OUTRO CTA ==================== */
+      .outro-avatar-ring {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        border: 4px solid #2563eb;
+        box-shadow: 0 0 60px rgba(37, 99, 235, 0.65);
+        background: #0f172a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+        position: relative;
+      }
+      .cta-button {
+        background: #2563eb;
+        color: #ffffff;
+        font-size: 28px;
+        font-weight: 700;
+        padding: 18px 46px;
+        border-radius: 9999px;
+        box-shadow: 0 12px 40px rgba(37, 99, 235, 0.55);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-width="1280"
+      data-height="720"
+      data-duration="56.56"
+    >
+      <!-- Synchronized Master Soundtrack -->
+      <audio
+        id="el-master-audio"
+        src="assets/audio_master_antigravity.mp3"
+        data-start="0"
+        data-duration="56.56"
+        data-track-index="10"
+        data-volume="1"
+      ></audio>
+
+      <!-- ================= SCENE 1: HOOK (0.0s – 3.82s) ================= -->
+      <section id="scene-01" class="scene">
+        <div class="sky-bg"></div>
+        <div class="sun-glare" data-layout-allow-overflow="true"></div>
+        <svg class="mountain-silhouette" data-layout-allow-overflow="true" viewBox="0 0 1280 220" preserveAspectRatio="none">
+          <path d="M0,220 L0,140 L160,80 L340,160 L520,60 L720,130 L940,40 L1120,120 L1280,70 L1280,220 Z" fill="#0369a1"/>
+          <path d="M0,220 L0,170 L220,110 L440,180 L640,90 L880,150 L1080,80 L1280,140 L1280,220 Z" fill="#0284c7" opacity="0.6"/>
+        </svg>
+        <div class="camera-rig" id="cam-01" data-layout-allow-overflow="true">
+          <div class="sc1-title-group">
+            <div class="sc1-badge-pill" id="sc1-badge">AI Motion Director</div>
+            <div class="sc1-what-if" id="sc1-txt-what-if">What if <span style="color: #0f172a; font-style: italic;">one file</span></div>
+            <div class="sc1-videos-line" id="sc1-txt-videos">
+              <span class="sc1-could-make">could make</span> <span class="sc1-videos-gradient">videos</span> <span class="sc1-like-mine italic-serif">like mine?</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 2: STEPPER (3.82s – 6.50s) ================= -->
+      <section id="scene-02" class="scene">
+        <div class="studio-bg"></div>
+        <div class="grid-pattern"></div>
+        <div class="camera-rig" id="cam-02">
+          <div class="stepper-card">
+            <div class="stepper-header-tag">
+              <span>● Traditional Production</span>
+            </div>
+            <div class="step-item" id="step-1">
+              <div class="step-icon-box">✕</div>
+              <span>Not a studio.</span>
+            </div>
+            <div class="step-item" id="step-2">
+              <div class="step-icon-box">✕</div>
+              <span>Not an editor.</span>
+            </div>
+            <div class="step-item" id="step-3">
+              <div class="step-icon-box">✕</div>
+              <span>Not a team.</span>
+            </div>
+            <div class="step-item" id="step-4">
+              <div class="step-icon-box">✕</div>
+              <span>Not a budget.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 3: SKILL.MD REVEAL (6.50s – 9.00s) ================= -->
+      <section id="scene-03" class="scene">
+        <div class="studio-bg"></div>
+        <div class="grid-pattern"></div>
+        <div class="camera-rig" id="cam-03">
+          <div class="sc3-layout">
+            <div class="sc3-copy">
+              <div class="sc3-just-this">Just this.</div>
+              <div class="sc3-a-skill-file">A <span>skill file.</span></div>
+            </div>
+            <div class="sc3-card-viewport">
+              <div class="skill-doc-card" id="sc3-doc">
+                <div class="bounding-box">
+                  <div class="box-handle bh-tl"></div>
+                  <div class="box-handle bh-tr"></div>
+                  <div class="box-handle bh-bl"></div>
+                  <div class="box-handle bh-br"></div>
+                  <div class="bounding-pill">SKILL.md</div>
+                </div>
+                <div class="skill-doc-header">
+                  <div class="skill-brand-lock">
+                    <svg viewBox="0 0 24 24" width="30" height="30">
+                      <circle cx="12" cy="12" r="3.2" fill="#ea580c"/>
+                      <ellipse cx="12" cy="12" rx="9.5" ry="3.8" fill="none" stroke="#ea580c" stroke-width="2" transform="rotate(-30 12 12)"/>
+                      <ellipse cx="12" cy="12" rx="9.5" ry="3.8" fill="none" stroke="#ea580c" stroke-width="2" transform="rotate(30 12 12)"/>
+                    </svg>
+                    <span class="skill-doc-title">SKILL.md</span>
+                  </div>
+                  <span class="skill-spec-badge">v3.0</span>
+                </div>
+                <div class="skill-doc-tag">motion-video-director</div>
+                <div class="skill-doc-yaml">
+                  <span class="y-key">name:</span> <span class="y-val">motion-video-director</span><br/>
+                  <span class="y-key">version:</span> <span class="y-val">3.0</span><br/>
+                  <span class="y-key">description:</span> <span class="y-val">cinematic ads & motion</span>
+                </div>
+                <div class="skill-skeleton-line" style="width: 100%;"></div>
+                <div class="skill-skeleton-line" style="width: 88%;"></div>
+                <div class="skill-skeleton-line" style="width: 92%;"></div>
+                <div class="skill-skeleton-line" style="width: 65%;"></div>
+                <!-- Animated SVG mouse cursor hovering -->
+                <svg class="mouse-cursor-svg" width="28" height="28" viewBox="0 0 24 24" fill="#0f172a">
+                  <path d="M4 2l16 8-8 2-2 8z" stroke="#ffffff" stroke-width="1.8"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 4: LAPTOP & MODEL SELECTOR (9.00s – 14.00s) ================= -->
+      <section id="scene-04" class="scene">
+        <div class="sky-bg"></div>
+        <div class="camera-rig" id="cam-04">
+          <div class="side-pill sp-left" id="sc4-pill-left">I dropped it</div>
+          <div class="side-pill sp-right" id="sc4-pill-right">into Antigravity</div>
+          <div class="laptop-wrapper" id="sc4-laptop">
+            <div class="laptop-screen">
+              <div class="laptop-cam"></div>
+              <div class="ide-window">
+                <div class="ide-titlebar">
+                  <div class="window-dot wd-red"></div>
+                  <div class="window-dot wd-yellow"></div>
+                  <div class="window-dot wd-green"></div>
+                  <span class="ide-title">Antigravity · Agentic IDE</span>
+                </div>
+                <div class="ide-main-area">
+                  <div class="prompt-box">
+                    <div class="prompt-text-line" id="sc4-prompt-text" data-layout-allow-overlap="true">
+                      <span data-layout-allow-overlap="true">⚡ Build a cinematic website with Antigravity</span>
+                    </div>
+                    <div class="prompt-bar-footer">
+                      <span style="font-size: 13px; color: #94a3b8;">4 tools active</span>
+                      <div class="model-pill-button">
+                        <span>Antigravity 2.0</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Dropdown Menu -->
+              <div class="model-dropdown-menu" id="sc4-dropdown" data-layout-allow-overlap="true">
+                <div class="dropdown-item">
+                  <div class="dropdown-item-title">Gemini 2.5 Pro</div>
+                  <div class="dropdown-item-sub">Capable for ambitious work</div>
+                </div>
+                <div class="dropdown-item">
+                  <div class="dropdown-item-title">Gemini 2.5 Flash</div>
+                  <div class="dropdown-item-sub">Deeper reasoning, faster replies</div>
+                </div>
+                <div class="dropdown-item active">
+                  <div class="dropdown-item-title">
+                    <span>Antigravity 2.0 Ultra</span>
+                    <span class="dropdown-badge">NEW</span>
+                  </div>
+                  <div class="dropdown-item-sub">Our most powerful model</div>
+                </div>
+              </div>
+            </div>
+            <div class="laptop-base"><div class="laptop-notch"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 5: WATCH PUNCH (14.00s – 15.00s) ================= -->
+      <section id="scene-05" class="scene">
+        <div class="sky-bg"></div>
+        <div class="camera-rig" id="cam-05">
+          <div class="watch-badge" id="sc5-watch">Watch.</div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 6: THREE SITES ($12,000) (15.00s – 19.50s) ================= -->
+      <section id="scene-06" class="scene">
+        <div class="studio-bg"></div>
+        <div class="grid-pattern"></div>
+        <div class="sc6-heading">Every day, people pay <span>thousands</span></div>
+        <div class="camera-rig" id="cam-06" data-layout-allow-overflow="true">
+          <div class="cards-3d-stage">
+            <div class="web-card wc-left">
+              <img src="assets/images/eco_nature.jpg" class="card-bg-img" alt=""/>
+              <div class="card-scrim"></div>
+              <div class="price-tag">$1,200</div>
+              <div style="position: relative; z-index: 10; padding: 24px; color: #fff;">
+                <div style="font-weight: 800; font-size: 20px;">Nature Haven</div>
+                <div style="font-size: 13px; color: #c7f8d8; margin-top: 4px;">Minimalist Eco Platform</div>
+              </div>
+            </div>
+            <div class="web-card wc-center" id="sc6-hero-card" data-layout-allow-overlap="true">
+              <img src="assets/images/dark_horse.jpg" class="card-bg-img" alt=""/>
+              <div class="card-scrim" style="background: linear-gradient(180deg, rgba(9, 9, 11, 0.4) 0%, rgba(9, 9, 11, 0.9) 100%);"></div>
+              <div class="price-tag" style="background: #2563eb;">$12,000</div>
+              <div style="position: relative; z-index: 10; padding: 50px 30px 24px 30px; color: #fff;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+                <div style="font-weight: 800; font-size: 26px; letter-spacing: -0.02em;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">Dark Horse Studio</div>
+                <div style="font-size: 14px; color: #38bdf8; margin-top: 6px;" data-layout-allow-overlap="true">Cinematic Creative Direction</div>
+              </div>
+              <div class="card-inspector-pill" style="top: 14px; left: 20px;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">&lt;nav class="top"&gt;</div>
+              <div class="card-inspector-pill" style="top: 130px; right: 24px;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">&lt;h1 class="hero-title"&gt;</div>
+              <div class="card-inspector-pill" style="bottom: 24px; left: 30px;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">&lt;canvas id="ascii-horse"&gt;</div>
+            </div>
+            <div class="web-card wc-right">
+              <img src="assets/images/explorer_tech.jpg" class="card-bg-img" alt=""/>
+              <div class="card-scrim"></div>
+              <div class="price-tag">$5,000</div>
+              <div style="position: relative; z-index: 10; padding: 24px; color: #fff;">
+                <div style="font-weight: 800; font-size: 20px;">Explorer AI</div>
+                <div style="font-size: 13px; color: #ffedd5; margin-top: 4px;">Extreme Terrain Workflows</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 7: ANTIGRAVITY IDE WORKSPACE (19.50s – 24.20s) ================= -->
+      <section id="scene-07" class="scene">
+        <div class="studio-bg"></div>
+        <div class="grid-pattern"></div>
+        <div class="camera-rig" id="cam-07">
+          <div class="sc7-workspace" id="sc7-ws">
+            <div class="ide-titlebar">
+              <div class="window-dot wd-red"></div>
+              <div class="window-dot wd-yellow"></div>
+              <div class="window-dot wd-green"></div>
+              <span class="ide-title">Antigravity · Autonomous Builder</span>
+            </div>
+            <div class="sc7-split">
+              <div class="sc7-code-pane">
+                <span class="kw">import</span> { gsap } <span class="kw">from</span> <span class="str">"gsap"</span>;<br/><br/>
+                <span class="kw">export function</span> <span class="fn">Hero</span>({ <span class="prop">brand</span> }) {<br/>
+                &nbsp;&nbsp;<span class="kw">const</span> title = <span class="str">"Antigravity"</span>;<br/>
+                &nbsp;&nbsp;<span class="kw">return</span> (<br/>
+                &nbsp;&nbsp;&nbsp;&nbsp;&lt;<span class="fn">section</span> <span class="prop">className</span>=<span class="str">"hero"</span>&gt;<br/>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span class="fn">Nav</span> <span class="prop">links</span>={[<span class="str">"Work"</span>, <span class="str">"Studio"</span>]} /&gt;<br/>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span class="fn">h1</span>&gt;{title}&lt;/<span class="fn">h1</span>&gt;<br/>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span class="fn">Canvas</span> <span class="prop">shader</span>={halftone} /&gt;<br/>
+                &nbsp;&nbsp;&nbsp;&nbsp;&lt;/<span class="fn">section</span>&gt;<br/>
+                &nbsp;&nbsp;);<br/>
+                }
+              </div>
+              <div class="sc7-preview-pane">
+                <div style="font-size: 52px; font-weight: 800; color: #fff; letter-spacing: -0.04em;">
+                  Antigravity<span style="color: #2563eb;">.</span>
+                </div>
+                <div style="font-size: 16px; color: #94a3b8; margin-top: 8px;">Autonomous Production Pipeline</div>
+                <div class="sc7-status-list">
+                  <div class="sc7-status-pill">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#2563eb"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-5" stroke="#fff" stroke-width="2.5" fill="none"/></svg>
+                    <span>Designing layout</span>
+                  </div>
+                  <div class="sc7-status-pill">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#2563eb"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-5" stroke="#fff" stroke-width="2.5" fill="none"/></svg>
+                    <span>Writing index.html</span>
+                  </div>
+                  <div class="sc7-status-pill">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#2563eb"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2" stroke="#fff" stroke-width="2.5" fill="none"/></svg>
+                    <span>Shipping to preview</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 8: INFINITE WALL (24.20s – 26.80s) ================= -->
+      <section id="scene-08" class="scene">
+        <div class="studio-bg"></div>
+        <div class="grid-pattern"></div>
+        <div class="switcher-pill">
+          <span class="switcher-tab">Portfolios</span>
+          <span class="switcher-tab active">Stores</span>
+          <span class="switcher-tab">Landing pages</span>
+        </div>
+        <div class="camera-rig" id="cam-08">
+          <div class="wall-grid" id="sc8-wall">
+            <div class="wall-card" style="background: #0f172a;">
+              <img src="assets/images/audio_hardware.jpg" class="card-bg-img" alt=""/>
+              <div class="card-scrim"></div>
+              <div class="wall-card-inner" style="position: relative; z-index: 10;">
+                <div class="wall-card-top">
+                  <div class="wall-dots"><div class="wall-dot"></div><div class="wall-dot"></div><div class="wall-dot"></div></div>
+                  <span class="wall-tag">ECOMMERCE</span>
+                </div>
+                <div>
+                  <div class="wall-card-title">AURA AUDIO</div>
+                  <div class="wall-card-sub">Spatial Sound Hardware</div>
+                </div>
+                <div class="wall-card-art">
+                  <span class="wall-stat">$349</span>
+                  <span class="wall-btn">PRE-ORDER</span>
+                </div>
+              </div>
+            </div>
+            <div class="wall-card" style="background: #064e3b;">
+              <img src="assets/images/modern_arch.jpg" class="card-bg-img" alt=""/>
+              <div class="card-scrim"></div>
+              <div class="wall-card-inner" style="position: relative; z-index: 10;">
+                <div class="wall-card-top">
+                  <div class="wall-dots"><div class="wall-dot"></div><div class="wall-dot"></div><div class="wall-dot"></div></div>
+                  <span class="wall-tag">PORTFOLIO</span>
+                </div>
+                <div>
+                  <div class="wall-card-title">VERDANT LABS</div>
+                  <div class="wall-card-sub">Carbon Neutral Architecture</div>
+                </div>
+                <div class="wall-card-art">
+                  <span class="wall-stat">01 / 08</span>
+                  <span class="wall-btn">VIEW CASE</span>
+                </div>
+              </div>
+            </div>
+            <div class="wall-card" style="background: #7c2d12;">
+              <img src="assets/images/film_studio.jpg" class="card-bg-img" alt=""/>
+              <div class="card-scrim"></div>
+              <div class="wall-card-inner" style="position: relative; z-index: 10;">
+                <div class="wall-card-top">
+                  <div class="wall-dots"><div class="wall-dot"></div><div class="wall-dot"></div><div class="wall-dot"></div></div>
+                  <span class="wall-tag">STUDIO</span>
+                </div>
+                <div>
+                  <div class="wall-card-title">SOLARIS FILM</div>
+                  <div class="wall-card-sub">Cinematography Collective</div>
+                </div>
+                <div class="wall-card-art">
+                  <span class="wall-stat">4K REEL</span>
+                  <span class="wall-btn">PLAY REEL</span>
+                </div>
+              </div>
+            </div>
+            <div class="wall-card" style="background: #1e3a8a;">
+              <img src="assets/images/cyber_saas.jpg" class="card-bg-img" alt=""/>
+              <div class="card-scrim"></div>
+              <div class="wall-card-inner" style="position: relative; z-index: 10;">
+                <div class="wall-card-top">
+                  <div class="wall-dots"><div class="wall-dot"></div><div class="wall-dot"></div><div class="wall-dot"></div></div>
+                  <span class="wall-tag">SAAS</span>
+                </div>
+                <div>
+                  <div class="wall-card-title">NEXUS CLOUD</div>
+                  <div class="wall-card-sub">Autonomous Orchestration</div>
+                </div>
+                <div class="wall-card-art">
+                  <span class="wall-stat">99.99%</span>
+                  <span class="wall-btn">START TRIAL</span>
+                </div>
+              </div>
+            </div>
+            <div class="wall-card" style="background: #312e81;">
+              <img src="assets/images/motion_design.jpg" class="card-bg-img" alt=""/>
+              <div class="card-scrim"></div>
+              <div class="wall-card-inner" style="position: relative; z-index: 10;">
+                <div class="wall-card-top">
+                  <div class="wall-dots"><div class="wall-dot"></div><div class="wall-dot"></div><div class="wall-dot"></div></div>
+                  <span class="wall-tag">AGENCY</span>
+                </div>
+                <div>
+                  <div class="wall-card-title">HYPERION AI</div>
+                  <div class="wall-card-sub">Generative Motion Systems</div>
+                </div>
+                <div class="wall-card-art">
+                  <span class="wall-stat">60 FPS</span>
+                  <span class="wall-btn">EXPLORE</span>
+                </div>
+              </div>
+            </div>
+            <div class="wall-card" style="background: #701a75;">
+              <img src="assets/images/luxury_watch.jpg" class="card-bg-img" alt=""/>
+              <div class="card-scrim"></div>
+              <div class="wall-card-inner" style="position: relative; z-index: 10;">
+                <div class="wall-card-top">
+                  <div class="wall-dots"><div class="wall-dot"></div><div class="wall-dot"></div><div class="wall-dot"></div></div>
+                  <span class="wall-tag">STORE</span>
+                </div>
+                <div>
+                  <div class="wall-card-title">VELVET OBJECTS</div>
+                  <div class="wall-card-sub">Limited Edition Design</div>
+                </div>
+                <div class="wall-card-art">
+                  <span class="wall-stat">DROP #04</span>
+                  <span class="wall-btn">SHOP NOW</span>
+                </div>
+              </div>
+            </div>
+            <div class="wall-card" style="background: #1e293b;">
+              <img src="assets/images/dark_horse.jpg" class="card-bg-img" alt=""/>
+              <div class="card-scrim"></div>
+              <div class="wall-card-inner" style="position: relative; z-index: 10;">
+                <div class="wall-card-top">
+                  <div class="wall-dots"><div class="wall-dot"></div><div class="wall-dot"></div><div class="wall-dot"></div></div>
+                  <span class="wall-tag">EDITORIAL</span>
+                </div>
+                <div>
+                  <div class="wall-card-title">MONOCLE TECH</div>
+                  <div class="wall-card-sub">The Intelligence Journal</div>
+                </div>
+                <div class="wall-card-art">
+                  <span class="wall-stat">ISSUE 12</span>
+                  <span class="wall-btn">READ</span>
+                </div>
+              </div>
+            </div>
+            <div class="wall-card" style="background: #0284c7;">
+              <img src="assets/images/eco_nature.jpg" class="card-bg-img" alt=""/>
+              <div class="card-scrim"></div>
+              <div class="wall-card-inner" style="position: relative; z-index: 10;">
+                <div class="wall-card-top">
+                  <div class="wall-dots"><div class="wall-dot"></div><div class="wall-dot"></div><div class="wall-dot"></div></div>
+                  <span class="wall-tag">PLATFORM</span>
+                </div>
+                <div>
+                  <div class="wall-card-title">PULSE METRICS</div>
+                  <div class="wall-card-sub">Real-Time Growth Intelligence</div>
+                </div>
+                <div class="wall-card-art">
+                  <span class="wall-stat">+142%</span>
+                  <span class="wall-btn">DASHBOARD</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 9: 3D CAROUSEL FAN (26.80s – 29.00s) ================= -->
+      <section id="scene-09" class="scene">
+        <div class="studio-bg"></div>
+        <div class="grid-pattern"></div>
+        <div style="position: absolute; top: 40px; font-size: 54px; font-weight: 800; color: #0f172a; letter-spacing: -0.03em;">
+          Premium websites <span class="italic-serif" style="color: #2563eb;">in minutes.</span>
+        </div>
+        <div class="camera-rig" id="cam-09" data-layout-allow-overflow="true">
+          <div class="carousel-fan" id="sc9-fan" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+            <div class="fan-item" style="transform: rotateY(-35deg) translateZ(-60px) translateX(-260px); background: #0f172a;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+              <img src="assets/images/film_studio.jpg" class="card-bg-img" alt=""/>
+              <div class="card-scrim"></div>
+              <div class="fan-card-inner" style="position: relative; z-index: 10;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+                <div class="fan-card-top" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+                  <span class="fan-tag" style="background: #1e3a8a; color: #ffffff;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">AGENCY</span>
+                  <span style="font-size: 11px; color: #e2e8f0; font-family: 'JetBrains Mono', monospace;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">studio-noir.com</span>
+                </div>
+                <div data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+                  <div class="fan-card-title" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">STUDIO NOIR</div>
+                  <div class="fan-card-sub" style="color: #cbd5e1;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">Design for luxury digital experiences</div>
+                </div>
+                <div class="fan-card-footer" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+                  <span style="font-size: 12px; font-weight: 700; color: #38bdf8;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">NEW WORK '26</span>
+                  <span style="font-size: 11px; color: #e2e8f0;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">→ Case study</span>
+                </div>
+              </div>
+            </div>
+            <div class="fan-item" style="transform: rotateY(-18deg) translateZ(-20px) translateX(-130px); background: #1e293b;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+              <img src="assets/images/cyber_saas.jpg" class="card-bg-img" alt=""/>
+              <div class="card-scrim"></div>
+              <div class="fan-card-inner" style="position: relative; z-index: 10;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+                <div class="fan-card-top" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+                  <span class="fan-tag" style="color: #ffffff; background: #065f46; border: none;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">SAAS PLATFORM</span>
+                  <span style="font-size: 11px; color: #e2e8f0; font-family: 'JetBrains Mono', monospace;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">flow-ai.app</span>
+                </div>
+                <div data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+                  <div class="fan-card-title" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">FLOW AI</div>
+                  <div class="fan-card-sub" style="color: #cbd5e1;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">Automated pipeline for video engineers</div>
+                </div>
+                <div class="fan-card-footer" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+                  <span style="font-size: 12px; font-weight: 700; color: #34d399;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">$49 / MO</span>
+                  <span style="font-size: 11px; color: #e2e8f0;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">→ Get started</span>
+                </div>
+              </div>
+            </div>
+            <div class="fan-item" style="transform: rotateY(0deg) translateZ(50px); border-color: #2563eb; background: #0b0f19;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+              <img src="assets/images/motion_design.jpg" class="card-bg-img" alt=""/>
+              <div class="card-scrim"></div>
+              <div class="fan-card-inner" style="position: relative; z-index: 10;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+                <div class="fan-card-top" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+                  <span class="fan-tag" style="background: #2563eb; color: #ffffff; font-weight: 800;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">FEATURED</span>
+                  <span style="font-size: 11px; color: #e2e8f0; font-family: 'JetBrains Mono', monospace;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">antigravity.codes</span>
+                </div>
+                <div data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+                  <div class="fan-card-title" style="font-size: 26px;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">ANTIGRAVITY</div>
+                  <div class="fan-card-sub" style="color: #cbd5e1;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">Kinetic motion graphics generated with pure code</div>
+                </div>
+                <div class="fan-card-footer" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+                  <span style="font-size: 13px; font-weight: 800; color: #60a5fa;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">READY TO SHIP</span>
+                  <span style="font-size: 12px; font-weight: 700; color: #fff; background: #2563eb; padding: 4px 10px; border-radius: 6px;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">LAUNCH →</span>
+                </div>
+              </div>
+            </div>
+            <div class="fan-item" style="transform: rotateY(18deg) translateZ(-20px) translateX(130px); background: #1e293b;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+              <img src="assets/images/luxury_watch.jpg" class="card-bg-img" alt=""/>
+              <div class="card-scrim"></div>
+              <div class="fan-card-inner" style="position: relative; z-index: 10;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+                <div class="fan-card-top" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+                  <span class="fan-tag" style="color: #ffffff; background: #92400e; border: none;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">LUXURY BRAND</span>
+                  <span style="font-size: 11px; color: #e2e8f0; font-family: 'JetBrains Mono', monospace;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">atelier-v.io</span>
+                </div>
+                <div data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+                  <div class="fan-card-title" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">ATELIER V</div>
+                  <div class="fan-card-sub" style="color: #cbd5e1;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">Architectural timepieces & artifacts</div>
+                </div>
+                <div class="fan-card-footer" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+                  <span style="font-size: 12px; font-weight: 700; color: #fbbf24;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">FALL EDITION</span>
+                  <span style="font-size: 11px; color: #e2e8f0;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">→ View catalog</span>
+                </div>
+              </div>
+            </div>
+            <div class="fan-item" style="transform: rotateY(35deg) translateZ(-60px) translateX(260px); background: #0f172a;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+              <img src="assets/images/dark_horse.jpg" class="card-bg-img" alt=""/>
+              <div class="card-scrim"></div>
+              <div class="fan-card-inner" style="position: relative; z-index: 10;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+                <div class="fan-card-top" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+                  <span class="fan-tag" style="color: #ffffff; background: #9f1239; border: none;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">WEB3 PORTAL</span>
+                  <span style="font-size: 11px; color: #e2e8f0; font-family: 'JetBrains Mono', monospace;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">nexus-chain.org</span>
+                </div>
+                <div data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+                  <div class="fan-card-title" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">NEXUS PROTOCOL</div>
+                  <div class="fan-card-sub" style="color: #cbd5e1;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">High throughput decentralized liquidity</div>
+                </div>
+                <div class="fan-card-footer" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
+                  <span style="font-size: 12px; font-weight: 700; color: #f43f5e;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">$1.4B TVL</span>
+                  <span style="font-size: 11px; color: #e2e8f0;" data-layout-allow-overlap="true" data-layout-allow-occlusion="true">→ Connect</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 10: ANTIGRAVITY HERO LOCKUP (29.00s – 34.00s) ================= -->
+      <section id="scene-10" class="scene">
+        <div class="studio-bg"></div>
+        <div class="grid-pattern"></div>
+        <div class="camera-rig" id="cam-10">
+          <div class="hero-lockup-container" id="sc10-lockup">
+            <div class="atom-3d-stage">
+              <div class="atom-nucleus"></div>
+              <div class="atom-ring atom-ring-1"></div>
+              <div class="atom-ring atom-ring-2"></div>
+              <div class="atom-ring atom-ring-3"></div>
+            </div>
+            <div class="hero-brand-title">Antigravity</div>
+            <div class="hero-brand-sub">Build something <span class="italic-serif">beautiful.</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 11: LAPTOP LOOP BACK (34.00s – 39.00s) ================= -->
+      <section id="scene-11" class="scene">
+        <div class="sky-bg"></div>
+        <div class="camera-rig" id="cam-11">
+          <div class="side-pill sp-left" id="sc11-pill-left">Every frame</div>
+          <div class="side-pill sp-right" id="sc11-pill-right">you just watched</div>
+          <div class="laptop-wrapper">
+            <div class="laptop-screen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff;">
+              <svg viewBox="0 0 48 48" width="60" height="60">
+                <circle cx="24" cy="24" r="6" fill="#ea580c"/>
+                <ellipse cx="24" cy="24" rx="18" ry="7" fill="none" stroke="#ea580c" stroke-width="2.2" transform="rotate(-28 24 24)"/>
+                <ellipse cx="24" cy="24" rx="18" ry="7" fill="none" stroke="#ea580c" stroke-width="2.2" transform="rotate(28 24 24)"/>
+              </svg>
+              <div style="font-size: 50px; font-weight: 800; color: #0f172a; margin-top: 10px; letter-spacing: -0.03em;">Antigravity</div>
+              <div style="font-size: 22px; color: #475569;">Build something <span class="italic-serif" style="color: #ea580c;">beautiful.</span></div>
+            </div>
+            <div class="laptop-base"><div class="laptop-notch"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 12: DEEP SPACE EARTH HORIZON (39.00s – 42.50s) ================= -->
+      <section id="scene-12" class="scene">
+        <div class="space-bg"></div>
+        <div class="stars-container"></div>
+        <div class="camera-rig" id="cam-12" data-layout-allow-overflow="true">
+          <div class="earth-horizon-arc" data-layout-allow-overflow="true"></div>
+          <div class="cosmic-text">
+            <div class="cosmic-line1">And right now you're <span>thinking...</span></div>
+            <div class="cosmic-no-way" id="sc12-no-way">no way.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 13: DM CARD (42.50s – 46.50s) ================= -->
+      <section id="scene-13" class="scene">
+        <div class="studio-bg"></div>
+        <div class="grid-pattern"></div>
+        <div style="position: absolute; top: 40px; font-size: 46px; font-weight: 700; color: #0f172a; letter-spacing: -0.02em;">
+          Follow me and comment <span style="color: #2563eb;">"SKILL"</span>
+        </div>
+        <div class="camera-rig" id="cam-13">
+          <div class="dm-card" id="sc13-dm">
+            <div class="dm-header">
+              <div class="dm-avatar" style="overflow: hidden; padding: 0;">
+                <img src="assets/images/creator_avatar.jpg" style="width: 100%; height: 100%; object-fit: cover;" alt="Efaz"/>
+              </div>
+              <div>
+                <div style="font-weight: 800; font-size: 21px; color: #0f172a;">@miftahul_islam_efaz</div>
+                <div style="font-size: 13px; color: #16a34a; font-weight: 600;">● Active now</div>
+              </div>
+            </div>
+            <div class="dm-bubble">
+              Here's your skill — enjoy!
+            </div>
+            <div class="dm-attachment">
+              <div style="width: 48px; height: 48px; border-radius: 12px; background: #ea580c; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 22px;">
+                📄
+              </div>
+              <div>
+                <div style="font-weight: 700; font-size: 18px; color: #0f172a;">SKILL.md</div>
+                <div style="font-size: 13.5px; color: #475569; font-weight: 500;">Antigravity skill · 4 KB</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 14: PIXEL MASCOT & WIZARD 200 (46.50s – 52.00s) ================= -->
+      <section id="scene-14" class="scene">
+        <div class="studio-bg"></div>
+        <div class="grid-pattern"></div>
+        <div class="camera-rig" id="cam-14">
+          <div style="text-align: center; z-index: 10;">
+            <div style="font-size: 44px; font-weight: 700; color: #0f172a; margin-bottom: 12px; letter-spacing: -0.02em;">Only the first</div>
+            <div class="mascot-container">
+              <div class="giant-200" id="sc14-200">200</div>
+            </div>
+            <div style="font-size: 36px; font-weight: 700; color: #2563eb; margin-top: 10px;">get it free.</div>
+            <div class="paid-stamp" id="sc14-paid" style="margin-top: 24px;">PAID</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 15: OUTRO CTA (52.00s – 56.56s) ================= -->
+      <section id="scene-15" class="scene">
+        <div class="studio-bg"></div>
+        <div class="grid-pattern"></div>
+        <div class="camera-rig" id="cam-15" data-layout-allow-overflow="true">
+          <div style="display: flex; flex-direction: column; align-items: center; z-index: 10;">
+            <div class="outro-avatar-ring" style="overflow: hidden; padding: 0;">
+              <img src="assets/images/creator_avatar.jpg" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" alt="Efaz"/>
+            </div>
+            <div style="font-size: 40px; font-weight: 800; color: #0f172a; margin-bottom: 22px; letter-spacing: -0.03em;">@miftahul_islam_efaz</div>
+            <div class="cta-button" id="sc15-cta">
+              <span>Comment "SKILL"</span>
+            </div>
+            <div style="font-size: 16px; color: #475569; margin-top: 16px; font-weight: 500;">Follow for the free skill · first 200 only</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      // Register GSAP master timeline for deterministic HyperFrames playback
+      const masterTl = gsap.timeline({ paused: true });
+
+      // Helper function to switch scenes cleanly with display toggling to conserve GPU layers
+      function showScene(sceneId, start, end) {
+        masterTl.set(sceneId, { display: "flex", opacity: 1, pointerEvents: "auto" }, start);
+        masterTl.set(sceneId, { display: "none", opacity: 0, pointerEvents: "none" }, end);
+      }
+
+      // ================= ENHANCED 3D CAMERA CHOREOGRAPHY TIMELINE =================
+
+      // Scene 1: Hook (0.00s – 3.82s)
+      showScene("#scene-01", 0.00, 3.82);
+      masterTl
+        .fromTo("#cam-01", { rotateX: 10, rotateY: -8, z: -100, scale: 0.92 }, { rotateX: 0, rotateY: 0, z: 40, scale: 1.05, duration: 3.82, ease: "sine.inOut" }, 0.0)
+        .fromTo("#sc1-badge", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.5)" }, 0.1)
+        .fromTo("#sc1-txt-what-if", { opacity: 0, y: 35, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "power3.out" }, 0.3)
+        .fromTo("#sc1-txt-videos", { opacity: 0, y: 45, scale: 0.85 }, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "back.out(1.4)" }, 1.5)
+        .fromTo(".mountain-silhouette", { y: 25, z: -80 }, { y: 0, z: -20, duration: 3.82, ease: "none" }, 0.0);
+
+      // Scene 2: Stepper (3.82s – 6.50s)
+      showScene("#scene-02", 3.82, 6.50);
+      masterTl
+        .fromTo("#cam-02", { rotateY: -14, rotateX: 8, z: -60, scale: 0.92 }, { rotateY: 10, rotateX: -6, z: 30, scale: 1.04, duration: 2.68, ease: "power1.inOut" }, 3.82)
+        .fromTo("#scene-02 .stepper-card", { opacity: 0, y: 35, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "power2.out" }, 3.85)
+        .set("#step-2", { className: "step-item active" }, 4.52)
+        .fromTo("#step-2 .step-icon-box", { scale: 0.7 }, { scale: 1, duration: 0.3, ease: "back.out(2)" }, 4.52)
+        .set("#step-3", { className: "step-item active" }, 5.66)
+        .fromTo("#step-3 .step-icon-box", { scale: 0.7 }, { scale: 1, duration: 0.3, ease: "back.out(2)" }, 5.66);
+
+      // Scene 3: SKILL.md Reveal (6.50s – 9.00s)
+      showScene("#scene-03", 6.50, 9.00);
+      masterTl
+        .fromTo("#cam-03", { rotateY: -22, rotateX: 12, z: -50, scale: 0.92 }, { rotateY: 16, rotateX: -8, z: 50, scale: 1.08, duration: 2.5, ease: "sine.inOut" }, 6.50)
+        .fromTo("#sc3-doc", { opacity: 0, y: 50, rotateY: 28, rotateX: 16 }, { opacity: 1, y: 0, rotateY: -14, rotateX: 8, duration: 0.75, ease: "power3.out" }, 6.55)
+        .fromTo("#scene-03 .sc3-copy", { opacity: 0, x: -35 }, { opacity: 1, x: 0, duration: 0.5, ease: "power2.out" }, 6.65)
+        .fromTo(".mouse-cursor-svg", { opacity: 0, x: 30, y: 30 }, { opacity: 1, x: 0, y: 0, duration: 0.5, ease: "power2.out" }, 7.2);
+
+      // Scene 4: Laptop & Model Selector (9.00s – 14.00s)
+      showScene("#scene-04", 9.00, 14.00);
+      masterTl
+        .fromTo("#cam-04", { rotateX: 18, rotateY: -12, z: -60, scale: 0.88 }, { rotateX: 2, rotateY: 2, z: 240, scale: 1.25, duration: 5.0, ease: "power2.inOut" }, 9.00)
+        .fromTo("#sc4-laptop", { opacity: 0, y: 70 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 9.05)
+        .fromTo("#sc4-pill-left", { opacity: 0, x: -50, scale: 0.8 }, { opacity: 1, x: 0, scale: 1, duration: 0.45, ease: "back.out(1.5)" }, 9.25)
+        .fromTo("#sc4-pill-right", { opacity: 0, x: 50, scale: 0.8 }, { opacity: 1, x: 0, scale: 1, duration: 0.45, ease: "back.out(1.5)" }, 9.75)
+        .fromTo("#sc4-dropdown", { opacity: 0, y: -15, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.35, ease: "back.out(1.4)" }, 11.15);
+
+      // Scene 5: Watch Punch (14.00s – 15.00s)
+      showScene("#scene-05", 14.00, 15.00);
+      masterTl
+        .fromTo("#cam-05", { z: -350, scale: 0.45 }, { z: 40, scale: 1.2, duration: 0.35, ease: "back.out(2.2)" }, 14.0)
+        .to("#cam-05", { z: 0, scale: 1.0, duration: 0.65, ease: "power2.out" }, 14.35)
+        .fromTo("#sc5-watch", { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.28, ease: "back.out(2.2)" }, 14.02);
+
+      // Scene 6: Three Sites ($12,000) (15.00s – 19.50s)
+      showScene("#scene-06", 15.00, 19.50);
+      masterTl
+        .fromTo("#cam-06", { x: -140, rotateY: 22, rotateX: 6, scale: 0.92 }, { x: 120, rotateY: -18, rotateX: 4, scale: 1.0, duration: 2.2, ease: "power1.inOut" }, 15.0)
+        .to("#cam-06", { x: 0, rotateY: 0, rotateX: 0, z: 180, scale: 1.24, duration: 0.9, ease: "power2.inOut" }, 17.2)
+        .fromTo(".web-card", { opacity: 0, y: 60 }, { opacity: 1, y: 0, stagger: 0.14, duration: 0.55, ease: "power2.out" }, 15.05)
+        .to("#sc6-hero-card", { scale: 1.18, z: 120, duration: 0.8, ease: "power2.inOut" }, 16.8);
+
+      // Scene 7: Antigravity IDE Workspace (19.50s – 24.20s)
+      showScene("#scene-07", 19.50, 24.20);
+      masterTl
+        .fromTo("#cam-07", { rotateX: 12, rotateY: -16, scale: 0.92, z: -40 }, { rotateX: 2, rotateY: 8, scale: 1.06, z: 80, duration: 4.7, ease: "sine.inOut" }, 19.5)
+        .fromTo("#sc7-ws", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" }, 19.55)
+        .fromTo(".sc7-status-pill", { opacity: 0, x: 35 }, { opacity: 1, x: 0, stagger: 0.35, duration: 0.35, ease: "back.out(1.5)" }, 20.8);
+
+      // Scene 8: Infinite Wall (24.20s – 26.80s)
+      showScene("#scene-08", 24.20, 26.80);
+      masterTl
+        .fromTo("#cam-08", { rotateX: 28, rotateY: -14, scale: 0.92, z: -80, y: -100 }, { rotateX: 18, rotateY: -8, scale: 1.06, z: 60, y: 100, duration: 2.6, ease: "none" }, 24.2)
+        .fromTo(".switcher-pill", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.3, ease: "back.out(1.5)" }, 24.22)
+        .fromTo("#sc8-wall", { y: -70 }, { y: 70, duration: 2.5, ease: "none" }, 24.20);
+
+      // Scene 9: 3D Carousel Fan (26.80s – 29.00s)
+      showScene("#scene-09", 26.80, 29.00);
+      masterTl
+        .fromTo("#cam-09", { rotateY: -28, rotateX: 8, scale: 0.92, z: -40 }, { rotateY: 24, rotateX: -6, scale: 1.1, z: 80, duration: 2.2, ease: "power1.inOut" }, 26.8)
+        .fromTo("#sc9-fan", { rotateY: -22 }, { rotateY: 18, duration: 2.2, ease: "power1.inOut" }, 26.80);
+
+      // Scene 10: Hero Lockup (29.00s – 34.00s)
+      showScene("#scene-10", 29.00, 34.00);
+      masterTl
+        .fromTo("#cam-10", { scale: 0.88, z: -40 }, { scale: 1.14, z: 80, duration: 5.0, ease: "sine.inOut" }, 29.0)
+        .fromTo(".atom-ring-1", { rotateX: 65, rotateZ: 0 }, { rotateX: 65, rotateZ: 360, duration: 5.0, ease: "none" }, 29.0)
+        .fromTo(".atom-ring-2", { rotateY: 65, rotateZ: 60 }, { rotateY: 65, rotateZ: 420, duration: 5.0, ease: "none" }, 29.0)
+        .fromTo(".atom-ring-3", { rotateZ: 90, rotateX: 45 }, { rotateZ: 90, rotateX: 405, duration: 5.0, ease: "none" }, 29.0)
+        .fromTo("#sc10-lockup", { opacity: 0, scale: 0.82 }, { opacity: 1, scale: 1, duration: 0.75, ease: "back.out(1.4)" }, 29.1);
+
+      // Scene 11: Laptop Loop Back (34.00s – 39.00s)
+      showScene("#scene-11", 34.00, 39.00);
+      masterTl
+        .fromTo("#cam-11", { rotateY: -14, rotateX: 8, scale: 0.9, z: -40 }, { rotateY: 0, rotateX: 0, scale: 1.16, z: 120, duration: 5.0, ease: "sine.inOut" }, 34.0)
+        .fromTo("#scene-11 .laptop-wrapper", { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out" }, 34.05)
+        .fromTo("#sc11-pill-left", { opacity: 0, x: -35 }, { opacity: 1, x: 0, duration: 0.45, ease: "back.out(1.5)" }, 34.4)
+        .fromTo("#sc11-pill-right", { opacity: 0, x: 35 }, { opacity: 1, x: 0, duration: 0.45, ease: "back.out(1.5)" }, 35.1);
+
+      // Scene 12: Deep Space Earth Horizon (39.00s – 42.50s)
+      showScene("#scene-12", 39.00, 42.50);
+      masterTl
+        .fromTo("#cam-12", { y: 110, rotateX: -14, z: -100, scale: 0.92 }, { y: -30, rotateX: 4, z: 60, scale: 1.08, duration: 3.5, ease: "power1.inOut" }, 39.0)
+        .fromTo(".earth-horizon-arc", { opacity: 0, y: 120 }, { opacity: 1, y: 0, duration: 0.85, ease: "power3.out" }, 39.05)
+        .fromTo("#sc12-no-way", { opacity: 0, scale: 0.75 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.8)" }, 40.4);
+
+      // Scene 13: DM Card (42.50s – 46.50s)
+      showScene("#scene-13", 42.50, 46.50);
+      masterTl
+        .fromTo("#cam-13", { rotateY: -12, rotateX: 6, scale: 0.94 }, { rotateY: 10, rotateX: -4, scale: 1.05, z: 40, duration: 4.0, ease: "sine.inOut" }, 42.5)
+        .fromTo("#sc13-dm", { opacity: 0, y: 55, scale: 0.93 }, { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "power3.out" }, 42.6);
+
+      // Scene 14: Pixel Mascot & Wizard 200 (46.50s – 52.00s)
+      showScene("#scene-14", 46.50, 52.00);
+      masterTl
+        .fromTo("#cam-14", { scale: 0.82, z: -40 }, { scale: 1.15, z: 60, duration: 5.5, ease: "power1.out" }, 46.5)
+        .fromTo("#sc14-200", { opacity: 0, scale: 0.45 }, { opacity: 1, scale: 1, duration: 0.55, ease: "back.out(2.0)" }, 47.7)
+        .fromTo("#sc14-paid", { z: 400, scale: 2.6, rotate: -32, opacity: 0 }, { z: 20, scale: 1.0, rotate: -12, opacity: 1, duration: 0.28, ease: "power4.in" }, 50.0)
+        .to("#cam-14", { y: -8, duration: 0.1, yoyo: true, repeat: 1, ease: "power2.inOut" }, 50.28);
+
+      // Scene 15: Outro CTA (52.00s – 56.56s)
+      showScene("#scene-15", 52.00, 56.56);
+      masterTl
+        .fromTo("#cam-15", { scale: 0.95 }, { scale: 1.06, z: 40, duration: 2.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 52.0)
+        .fromTo(".outro-avatar-ring", { opacity: 0, scale: 0.65 }, { opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" }, 52.05)
+        .fromTo("#sc15-cta", { scale: 0.92 }, { scale: 1.06, duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 4 }, 52.5);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = masterTl;
+    </script>
+  </body>
+</html>

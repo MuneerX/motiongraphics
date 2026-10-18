@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MubarakTech — Steal the 2-Minute Voice Memo</title>
+
+  <!-- Google Fonts: Instrument Serif, Plus Jakarta Sans, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- GSAP 3.12.5 & Three.js r128 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    :root {
+      --cream: #FCF8F2;
+      --cream-card: #FFFDF9;
+      --obsidian: #0D0A09;
+      --obsidian-card: #161210;
+      --obsidian-subtle: #201A18;
+      --terracotta: #DF5A37;
+      --terracotta-soft: #F4D7CE;
+      --terracotta-glow: rgba(223, 90, 55, 0.4);
+      --ink: #141210;
+      --muted: #78716C;
+      --purple-cursor: #7C3AED;
+      --green-badge: #DCFCE7;
+      --green-text: #15803D;
+      --green-card: #052E16;
+      --yellow-badge: #FEF9C3;
+      --yellow-text: #A16207;
+      --red-alert: #EF4444;
+      --red-bg: #2A0E11;
+      --stripe-purple: #635BFF;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-serif: 'Instrument Serif', Georgia, serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #080706;
+      color: #F5F2EB;
+      font-family: var(--font-sans);
+      overflow: hidden;
+    }
+
+    /* HEADLESS RENDER MODE (Clean 1920x1080 without UI chrome) */
+    body.headless-render,
+    body.headless-render .studio-shell,
+    body.headless-render .viewport-area {
+      width: 1920px !important;
+      height: 1080px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+      background: var(--cream) !important;
+    }
+
+    body.headless-render .studio-topbar,
+    body.headless-render .scene-strip,
+    body.headless-render .studio-controls {
+      display: none !important;
+    }
+
+    body.headless-render #root {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 1920px !important;
+      height: 1080px !important;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    /* STUDIO SHELL */
+    .studio-shell {
+      display: flex;
+      flex-direction: column;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .studio-topbar {
+      height: 48px;
+      background: #12100E;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 100;
+      flex-shrink: 0;
+    }
+
+    .studio-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .studio-badge {
+      background: rgba(223, 90, 55, 0.16);
+      color: #FF7A59;
+      border: 1px solid rgba(223, 90, 55, 0.35);
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+    }
+
+    /* SCENE JUMP STRIP */
+    .scene-strip {
+      height: 38px;
+      background: #0D0B0A;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      flex-shrink: 0;
+    }
+    .scene-strip::-webkit-scrollbar { display: none; }
+
+    .scene-pill {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #A8A29E;
+      font-size: 11px;
+      padding: 4px 9px;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      font-family: var(--font-mono);
+    }
+    .scene-pill:hover {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+    .scene-pill.active {
+      background: var(--terracotta);
+      border-color: var(--terracotta);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* VIEWPORT STAGE WRAPPER */
+    .viewport-area {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #181412 0%, #060504 100%);
+      overflow: hidden;
+    }
+
+    /* HYPERFRAMES COMPOSITION ROOT (1920x1080) */
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      background: var(--cream);
+      overflow: hidden;
+      transform-origin: center center;
+      box-shadow: 0 30px 90px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.08);
+    }
+
+    #three-stage {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* SCENE LAYERS */
+    .scene-layer {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      z-index: 5;
+    }
+
+    /* TYPOGRAPHY HELPERS */
+    .editorial-serif {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    .hero-line {
+      font-size: 68px;
+      letter-spacing: -0.035em;
+      font-weight: 600;
+      color: var(--ink);
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      line-height: 1.15;
+    }
+
+    .hero-line.light {
+      color: #F7F4EE;
+    }
+
+    .text-terracotta {
+      color: var(--terracotta);
+    }
+
+    /* SUBTLE PIXEL PATTERNS */
+    .pixel-grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(20,18,16,0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(20,18,16,0.035) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+    }
+
+    .pixel-dots-pattern {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(20,18,16,0.07) 5px, transparent 5px);
+      background-size: 32px 32px;
+      pointer-events: none;
+    }
+
+    /* GLASS SQUIRCLE SURFACES */
+    .glass-card-obsidian {
+      background: rgba(22, 18, 16, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 28px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.7), inset 0 1px 18px rgba(223, 90, 55, 0.18);
+      backdrop-filter: blur(16px);
+      color: #F5F2EB;
+    }
+
+    .glass-card-cream {
+      background: var(--cream-card);
+      border: 1px solid rgba(20, 18, 16, 0.08);
+      border-radius: 28px;
+      box-shadow: 0 20px 50px rgba(20, 18, 16, 0.08);
+      color: var(--ink);
+    }
+
+    /* SPRING ALERT BADGES */
+    .alert-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--red-bg);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #FCA5A5;
+      font-family: var(--font-mono);
+      font-size: 17px;
+      font-weight: 500;
+      padding: 10px 18px;
+      border-radius: 999px;
+      box-shadow: 0 12px 32px rgba(239, 68, 68, 0.25);
+    }
+
+    /* CORNER FRAMING BRACKETS */
+    .corner-bracket {
+      position: absolute;
+      width: 44px;
+      height: 44px;
+      border-color: var(--terracotta);
+      border-style: solid;
+      pointer-events: none;
+    }
+    .bracket-tl { top: -20px; left: -20px; border-width: 5px 0 0 5px; }
+    .bracket-br { bottom: -20px; right: -20px; border-width: 0 5px 5px 0; }
+
+    /* STUDIO PLAYBAR CONTROLS */
+    .studio-controls {
+      height: 52px;
+      background: #12100E;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 100;
+      flex-shrink: 0;
+    }
+
+    .ctrl-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ctrl-btn {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #F5F2EB;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .ctrl-btn:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.25);
+    }
+    .ctrl-btn.primary {
+      background: var(--terracotta);
+      border-color: var(--terracotta);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .time-slider {
+      flex: 1;
+      max-width: 600px;
+      margin: 0 16px;
+      accent-color: var(--terracotta);
+      cursor: pointer;
+    }
+
+    .time-readout {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: #A8A29E;
+      min-width: 140px;
+      text-align: right;
+    }
+
+    /* SCENE SPECIFIC STYLING */
+
+    /* S1: Hook */
+    .s1-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 16px;
+    }
+    .s1-pill {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--terracotta);
+      background: rgba(223, 90, 55, 0.1);
+      border: 1px solid rgba(223, 90, 55, 0.25);
+      padding: 6px 18px;
+      border-radius: 99px;
+      margin-bottom: 8px;
+    }
+    .s1-strikethrough {
+      position: relative;
+      display: inline-block;
+      color: #9CA3AF;
+    }
+    .s1-strikethrough::after {
+      content: '';
+      position: absolute;
+      left: -4px;
+      right: -4px;
+      top: 52%;
+      height: 4px;
+      background: var(--terracotta);
+      transform: rotate(-4deg);
+      border-radius: 2px;
+    }
+
+    /* S2: 2 Hours */
+    .s2-grid {
+      display: grid;
+      grid-template-columns: 460px 460px;
+      gap: 30px;
+      margin-top: 40px;
+    }
+    .s2-card {
+      padding: 28px;
+      border-radius: 24px;
+    }
+    .s2-app-chips {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .s2-chip {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 6px 14px;
+      border-radius: 99px;
+      font-size: 13px;
+      font-family: var(--font-mono);
+      color: #D6D3D1;
+    }
+
+    /* S4: 3 Days Later Alerts */
+    .s4-alert-container {
+      position: relative;
+      width: 1000px;
+      height: 400px;
+      margin-top: 30px;
+    }
+    .s4-badge-item {
+      position: absolute;
+      padding: 14px 26px;
+      border-radius: 999px;
+      font-size: 22px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    /* S5: Meet / Portal */
+    .portal-box {
+      width: 520px;
+      height: 280px;
+      border-radius: 32px;
+      background: #14100E;
+      border: 1px solid rgba(223, 90, 55, 0.4);
+      box-shadow: 0 0 100px rgba(223, 90, 55, 0.25);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      position: relative;
+    }
+
+    /* S6: WhatsApp Bot UI */
+    .wa-chat-window {
+      width: 860px;
+      background: #111B21;
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+      overflow: hidden;
+      margin-top: 30px;
+    }
+    .wa-header {
+      background: #202C33;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .wa-body {
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .wa-bubble-user {
+      align-self: flex-end;
+      background: #005C4B;
+      color: #E9EDEF;
+      padding: 14px 20px;
+      border-radius: 18px 18px 4px 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      max-width: 480px;
+    }
+    .wa-bubble-bot {
+      align-self: flex-start;
+      background: #202C33;
+      color: #E9EDEF;
+      padding: 18px 22px;
+      border-radius: 18px 18px 18px 4px;
+      max-width: 600px;
+      border: 1px solid rgba(223, 90, 55, 0.3);
+    }
+
+    /* S7, S8, S9: Feature Pillars */
+    .pillar-layout {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 24px;
+    }
+    .step-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--terracotta);
+      background: rgba(223, 90, 55, 0.14);
+      border: 1px solid rgba(223, 90, 55, 0.3);
+      padding: 6px 16px;
+      border-radius: 99px;
+    }
+
+    /* S10: Split Comparison */
+    .s10-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      width: 1400px;
+      gap: 60px;
+      margin-top: 30px;
+    }
+    .s10-col {
+      padding: 44px;
+      border-radius: 32px;
+    }
+
+    /* S11: Comment VOICE */
+    .cta-card {
+      width: 980px;
+      background: rgba(22, 18, 16, 0.95);
+      border: 2px solid rgba(223, 90, 55, 0.4);
+      border-radius: 36px;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.8), 0 0 60px rgba(223, 90, 55, 0.25);
+      padding: 50px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 26px;
+    }
+    .voice-pill {
+      font-size: 42px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      background: var(--terracotta);
+      color: #fff;
+      padding: 12px 36px;
+      border-radius: 20px;
+      box-shadow: 0 12px 30px rgba(223, 90, 55, 0.4);
+      letter-spacing: 0.05em;
+    }
+
+    /* CURSOR */
+    .software-cursor {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 1000;
+      pointer-events: none;
+    }
+    .cursor-tag {
+      background: var(--purple-cursor);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="studio-shell">
+  <!-- Topbar -->
+  <header class="studio-topbar">
+    <div class="studio-brand">
+      <span>MubarakTech</span>
+      <span style="color:rgba(255,255,255,0.3)">/</span>
+      <span style="font-weight:400; color:#A8A29E">2-Minute Voice Memo</span>
+      <span class="studio-badge">53.2s RECREATION</span>
+    </div>
+    <div style="font-size:12px; font-family:var(--font-mono); color:#78716C">
+      HyperFrames + GSAP + Three.js
+    </div>
+  </header>
+
+  <!-- Scene Jump Strip -->
+  <nav class="scene-strip" id="scene-strip">
+    <!-- Scene pills injected by JS -->
+  </nav>
+
+  <!-- Viewport Area -->
+  <main class="viewport-area" id="viewport-area">
+    <div id="root">
+      <!-- Three.js Stage Background -->
+      <div id="three-stage"></div>
+
+      <!-- ================= SCENE 1: THE HOOK (00:00 - 00:03.5) ================= -->
+      <section class="scene-layer" id="s1" style="background: var(--cream);">
+        <div class="pixel-grid-bg"></div>
+        <div class="s1-wrap">
+          <div class="s1-pill">CLIENT CASE STUDY — MUBARAKTECH</div>
+          <h1 class="hero-line" style="font-size: 64px; flex-direction: column; gap: 8px;">
+            <span>Steal the 2-minute <span class="editorial-serif text-terracotta" style="font-size: 78px;">voice memo</span></span>
+            <span style="font-weight: 500; font-size: 56px; color: #44403C;">
+              replacing our client's <span class="s1-strikethrough">$3,000</span> <span class="editorial-serif" style="color:var(--ink)">assistant.</span>
+            </span>
+          </h1>
+          <div style="margin-top: 24px; display: flex; align-items: center; gap: 16px;">
+            <div style="display:flex; align-items:center; gap:8px; background: rgba(20,18,16,0.05); padding: 8px 18px; border-radius: 99px; font-family:var(--font-mono); font-size:14px; color:#57534E;">
+              <span>⚡</span> <span>Autonomous Client Pipeline</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; background: rgba(223,90,55,0.1); padding: 8px 18px; border-radius: 99px; font-family:var(--font-mono); font-size:14px; color:var(--terracotta);">
+              <span>●</span> <span>Zero Manual Typing</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 2: 2 HOURS EVERY EVENING (00:03.5 - 00:07.5) ================= -->
+      <section class="scene-layer" id="s2" style="background: var(--obsidian);">
+        <div style="display:flex; flex-direction:column; align-items:center; text-align:center; z-index:10;">
+          <div style="font-family:var(--font-mono); font-size:13px; color:var(--terracotta); letter-spacing:0.1em; margin-bottom:12px;">
+            THE FOUNDER TAX
+          </div>
+          <h2 class="hero-line light" style="font-size: 58px;">
+            <span>Agency founders lose</span>
+            <span class="editorial-serif text-terracotta" style="font-size: 72px;">two hours</span>
+            <span>every evening</span>
+          </h2>
+          <p style="color:#A8A29E; font-size: 24px; margin-top: 10px;">
+            manually transcribing client audio notes and typing them into project apps.
+          </p>
+
+          <div class="s2-grid">
+            <!-- Voice memo item -->
+            <div class="glass-card-obsidian s2-card" style="text-align: left;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                <span style="font-family:var(--font-mono); font-size:12px; color:#78716C">INCOMING AUDIO</span>
+                <span style="color:#EF4444; font-size:12px; font-family:var(--font-mono)">● 02:14</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:14px;">
+                <div style="width:44px; height:44px; border-radius:50%; background:var(--terracotta); display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px;">
+                  ▶
+                </div>
+                <div style="flex:1;">
+                  <div style="height:6px; background:rgba(255,255,255,0.15); border-radius:3px; position:relative; overflow:hidden;">
+                    <div style="position:absolute; left:0; top:0; width:45%; height:100%; background:var(--terracotta);"></div>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-mono); color:#78716C; margin-top:6px;">
+                    <span>0:58</span>
+                    <span>2:14</span>
+                  </div>
+                </div>
+              </div>
+              <div style="margin-top:16px; font-size:14px; color:#D6D3D1; line-height:1.4; font-style:italic;">
+                "Hey guys, we need the checkout page redesigned, plus the Stripe webhook broke..."
+              </div>
+            </div>
+
+            <!-- Manual copy-paste grind -->
+            <div class="glass-card-obsidian s2-card" style="text-align: left;">
+              <div style="font-family:var(--font-mono); font-size:12px; color:#78716C; margin-bottom:14px;">
+                MANUAL DATA ENTRY
+              </div>
+              <div style="font-family:var(--font-mono); font-size:14px; color:#EF4444; background:rgba(239,68,68,0.1); padding:10px 14px; border-radius:8px; border:1px solid rgba(239,68,68,0.2);">
+                ⚠ Repetitive manual transcription
+              </div>
+              <div class="s2-app-chips">
+                <span class="s2-chip">ClickUp</span>
+                <span class="s2-chip">Notion</span>
+                <span class="s2-chip">Slack</span>
+                <span class="s2-chip">Linear</span>
+              </div>
+              <div style="margin-top:14px; font-size:13px; color:#78716C; font-family:var(--font-mono)">
+                Average loss: 10 hrs / week / founder
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 3: EXHAUSTING & FORGETTING (00:07.5 - 00:11.0) ================= -->
+      <section class="scene-layer" id="s3" style="background: var(--obsidian);">
+        <div style="display:flex; flex-direction:column; align-items:center; text-align:center;">
+          <h2 class="hero-line light" style="font-size: 72px;">
+            <span>It's completely</span>
+            <span class="editorial-serif text-terracotta" style="font-size: 88px;">exhausting.</span>
+          </h2>
+          <div style="margin-top: 36px; display:flex; gap:28px; align-items:center;">
+            <div class="glass-card-obsidian" style="padding: 24px 32px; display:flex; align-items:center; gap:20px; width:440px;">
+              <span style="font-size: 32px;">🚗</span>
+              <div style="text-align:left;">
+                <div style="font-size:16px; font-weight:600;">Driving home at 8:30 PM</div>
+                <div style="font-size:13px; color:#A8A29E; margin-top:4px;">Urgent client voice memo arrives</div>
+              </div>
+            </div>
+            <div style="font-size:24px; color:#78716C;">➔</div>
+            <div class="glass-card-obsidian" style="padding: 24px 32px; display:flex; align-items:center; gap:20px; width:440px; border-color: rgba(223,90,55,0.4);">
+              <span style="font-size: 32px;">💭</span>
+              <div style="text-align:left;">
+                <div style="font-size:16px; font-weight:600; color:var(--terracotta);">"I'll deal with it tomorrow."</div>
+                <div style="font-size:13px; color:#A8A29E; margin-top:4px;">And then you forget.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 4: THREE DAYS LATER (00:11.0 - 00:14.5) ================= -->
+      <section class="scene-layer" id="s4" style="background: var(--obsidian);">
+        <div style="display:flex; flex-direction:column; align-items:center; text-align:center; position:relative; width:100%;">
+          <div style="font-family:var(--font-mono); font-size:14px; color:#EF4444; letter-spacing:0.15em;">
+            THE INEVITABLE CRASH
+          </div>
+          <h2 class="hero-line light" style="font-size: 64px; margin-top:10px;">
+            <span class="editorial-serif" style="font-size: 78px; color:#F87171;">Three days later...</span>
+          </h2>
+          <p style="font-size: 24px; color: #D6D3D1; margin-top: 8px;">
+            the client is furious because nobody started the job.
+          </p>
+
+          <div class="s4-alert-container">
+            <div class="alert-badge s4-badge-item" id="s4-alert-1" style="top: 40px; left: 80px;">
+              <span>🚨</span> <span>"Where is the deliverable you promised??"</span>
+            </div>
+            <div class="alert-badge s4-badge-item" id="s4-alert-2" style="top: 130px; right: 90px; background:#380C10; border-color:#EF4444;">
+              <span>⚠️</span> <span>Client status: ESCALATED / ANGRY</span>
+            </div>
+            <div class="alert-badge s4-badge-item" id="s4-alert-3" style="top: 220px; left: 160px;">
+              <span>❌</span> <span>Nobody assigned the tasks</span>
+            </div>
+            <div class="alert-badge s4-badge-item" id="s4-alert-4" style="top: 290px; right: 180px; background:#450A0A;">
+              <span>⏰</span> <span>Missed 72-hour deadline</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 5: INSTEAD / MUBARAKTECH REVEAL (00:14.5 - 00:18.0) ================= -->
+      <section class="scene-layer" id="s5" style="background: var(--obsidian);">
+        <div style="display:flex; flex-direction:column; align-items:center; text-align:center; position:relative;">
+          <!-- Corner brackets around thesis word -->
+          <div style="position:relative; padding: 20px 48px; margin-bottom: 24px;" id="s5-bracket-target">
+            <div class="corner-bracket bracket-tl"></div>
+            <div class="corner-bracket bracket-br"></div>
+            <span style="font-size: 40px; font-family:var(--font-mono); font-weight:600; color:var(--terracotta); letter-spacing:0.1em;">
+              INSTEAD
+            </span>
+          </div>
+
+          <div class="portal-box" id="s5-portal">
+            <div style="display:flex; align-items:center; gap:14px;">
+              <div style="width:48px; height:48px; border-radius:12px; background:var(--terracotta); display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-weight:800; font-size:22px; color:#fff;">
+                MT
+              </div>
+              <div style="text-align:left;">
+                <div style="font-size:28px; font-weight:700; letter-spacing:-0.03em;">mubaraktech<span style="color:var(--terracotta)">.ai</span></div>
+                <div style="font-size:12px; font-family:var(--font-mono); color:#78716C;">AUTONOMOUS AGENCY WORKFLOWS</div>
+              </div>
+            </div>
+            <p style="font-size: 19px; color:#E7E5E4; max-width: 440px; line-height:1.4;">
+              Here's what our clients at MubarakTech do instead.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 6: WHATSAPP BOT (00:18.0 - 00:22.5) ================= -->
+      <section class="scene-layer" id="s6" style="background: var(--obsidian);">
+        <div style="display:flex; flex-direction:column; align-items:center; text-align:center;">
+          <div class="step-indicator">THE PRIVATE BOT</div>
+          <h2 class="hero-line light" style="font-size: 52px; margin-top:8px;">
+            <span>They forward that</span>
+            <span class="editorial-serif text-terracotta" style="font-size: 64px;">60-second audio note</span>
+            <span>to a private bot.</span>
+          </h2>
+          <p style="font-size: 22px; color: #A8A29E; margin-top: 8px;">
+            In forty seconds, three things happen automatically:
+          </p>
+
+          <div class="wa-chat-window">
+            <div class="wa-header">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:36px; height:36px; border-radius:50%; background:var(--terracotta); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; color:#fff;">
+                  🤖
+                </div>
+                <div style="text-align:left;">
+                  <div style="font-size:15px; font-weight:600;">MubarakTech Dispatch Bot</div>
+                  <div style="font-size:12px; color:#8696A0;">Active 24/7 • Automated</div>
+                </div>
+              </div>
+              <div style="font-family:var(--font-mono); font-size:12px; color:#8696A0; background:rgba(255,255,255,0.05); padding:4px 10px; border-radius:6px;">
+                PRIVATE BOT
+              </div>
+            </div>
+            <div class="wa-body">
+              <div class="wa-bubble-user">
+                <span style="font-size:20px;">🎤</span>
+                <div style="text-align:left; flex:1;">
+                  <div style="font-size:13px; font-weight:600;">Voice message forwarded (0:60)</div>
+                  <div style="font-size:11px; opacity:0.8;">Audio memo from client Sarah</div>
+                </div>
+                <span style="font-size:12px; font-family:var(--font-mono);">08:34 PM ✓✓</span>
+              </div>
+              <div class="wa-bubble-bot">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+                  <span style="color:#22C55E;">⚡</span>
+                  <span style="font-weight:600; font-size:14px; color:#22C55E;">Audio received & parsed in 40s</span>
+                </div>
+                <div style="font-size:13px; color:#D6D3D1; line-height:1.4;">
+                  Transcribed, split into deliverables, assigned to engineering, client recap prepared, and Stripe invoice drafted.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 7: PILLAR 1 - EXTRACT & ASSIGN (00:22.5 - 00:27.5) ================= -->
+      <section class="scene-layer" id="s7" style="background: var(--obsidian);">
+        <div class="pillar-layout">
+          <div class="step-indicator">PILLAR 01 / 03</div>
+          <h2 class="hero-line light" style="font-size: 54px;">
+            <span>1. Extracts deliverables & assigns with a</span>
+            <span class="editorial-serif text-terracotta" style="font-size: 66px;">hard deadline.</span>
+          </h2>
+
+          <!-- Task Card UI -->
+          <div class="glass-card-obsidian" style="width: 860px; padding: 34px; text-align: left; border-color: rgba(223,90,55,0.3);">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+              <span style="background:rgba(34,197,94,0.15); color:#4ADE80; border:1px solid rgba(34,197,94,0.3); padding:4px 12px; border-radius:99px; font-size:12px; font-family:var(--font-mono)">
+                ✓ AUTO-ASSIGNED
+              </span>
+              <span style="font-family:var(--font-mono); font-size:13px; color:#EF4444; font-weight:600;">
+                ⏳ HARD DEADLINE: FRIDAY 5:00 PM
+              </span>
+            </div>
+            <h3 style="font-size: 24px; font-weight: 600; margin-bottom: 12px;">
+              Revamp checkout mobile experience & fix Stripe webhook listener
+            </h3>
+            <div style="display:flex; align-items:center; gap:20px; font-size:14px; color:#A8A29E; font-family:var(--font-mono); margin-bottom:20px;">
+              <span>Assignee: <strong style="color:#fff;">Alex Rivera (Lead Dev)</strong></span>
+              <span>Priority: <strong style="color:#F87171;">P0 Critical</strong></span>
+              <span>Source: <strong style="color:var(--terracotta);">WhatsApp Voice Note</strong></span>
+            </div>
+            <div style="background:rgba(0,0,0,0.4); padding:16px 20px; border-radius:14px; border:1px solid rgba(255,255,255,0.06); font-family:var(--font-mono); font-size:13px; line-height:1.6; color:#D6D3D1;">
+              <div>[✓] Scope extracted: Update checkout responsive CSS</div>
+              <div>[✓] Fix Stripe webhook 404 handler</div>
+              <div>[✓] QA tests in mobile Safari & Chrome</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 8: PILLAR 2 - CLIENT RECAP (00:27.5 - 00:32.5) ================= -->
+      <section class="scene-layer" id="s8" style="background: var(--obsidian);">
+        <div class="pillar-layout">
+          <div class="step-indicator">PILLAR 02 / 03</div>
+          <h2 class="hero-line light" style="font-size: 54px;">
+            <span>2. Drafts a client recap for your</span>
+            <span class="editorial-serif text-terracotta" style="font-size: 66px;">one-tap review.</span>
+          </h2>
+
+          <!-- Review Modal Card -->
+          <div class="glass-card-obsidian" style="width: 860px; padding: 34px; text-align: left; position:relative;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+              <span style="font-family:var(--font-mono); font-size:13px; color:#78716C;">PREPARED CLIENT EMAIL</span>
+              <span style="background:rgba(223,90,55,0.15); color:var(--terracotta); padding:4px 12px; border-radius:99px; font-size:12px; font-family:var(--font-mono);">
+                READY FOR APPROVAL
+              </span>
+            </div>
+            <div style="font-size:15px; color:#E7E5E4; line-height:1.6; background:rgba(0,0,0,0.3); padding:20px; border-radius:14px; border:1px solid rgba(255,255,255,0.06);">
+              <p><strong>To:</strong> sarah@clientbrand.com</p>
+              <p><strong>Subject:</strong> Update: Checkout Revamp & Webhook Resolution Underway</p>
+              <p style="margin-top:10px; color:#A8A29E;">
+                "Hi Sarah, received your audio memo! Alex on our engineering team has been assigned and is addressing the mobile checkout layout and webhook listener today. Expected completion: Friday 5 PM."
+              </p>
+            </div>
+            <div style="margin-top:24px; display:flex; justify-content:flex-end;">
+              <button style="background:var(--terracotta); border:none; color:#fff; font-size:16px; font-weight:600; padding:14px 28px; border-radius:12px; cursor:pointer; display:flex; align-items:center; gap:10px; box-shadow:0 10px 24px rgba(223,90,55,0.4);" id="s8-approve-btn">
+                <span>Approve & Send to Client</span>
+                <span>➔</span>
+              </button>
+            </div>
+
+            <!-- Purple Founder Cursor -->
+            <div class="software-cursor" id="s8-cursor" style="left: 640px; top: 220px;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M5.5 3.2L18.8 12.8L12.5 14.2L15.8 20.8L13.2 22L10 15.4L5.5 19.8V3.2Z" fill="#7C3AED" stroke="#FFFFFF" stroke-width="1.5"/>
+              </svg>
+              <div class="cursor-tag">You (1-Tap)</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 9: PILLAR 3 - STRIPE INVOICE (00:32.5 - 00:37.5) ================= -->
+      <section class="scene-layer" id="s9" style="background: var(--obsidian);">
+        <div class="pillar-layout">
+          <div class="step-indicator">PILLAR 03 / 03</div>
+          <h2 class="hero-line light" style="font-size: 54px;">
+            <span>3. Generates the</span>
+            <span class="editorial-serif text-terracotta" style="font-size: 66px;">Stripe invoice link</span>
+            <span>automatically.</span>
+          </h2>
+
+          <!-- Stripe Invoice Card -->
+          <div class="glass-card-obsidian" style="width: 820px; padding: 36px; text-align: left; border-color: rgba(99,91,255,0.3);">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:22px; font-weight:800; color:#635BFF; font-family:var(--font-mono);">stripe</span>
+                <span style="font-size:13px; color:#A8A29E; font-family:var(--font-mono);">INVOICE GENERATOR</span>
+              </div>
+              <span style="background:rgba(34,197,94,0.15); color:#4ADE80; padding:4px 12px; border-radius:99px; font-size:12px; font-family:var(--font-mono)">
+                PAID VIA LINK
+              </span>
+            </div>
+            <div style="font-size:38px; font-weight:700; color:#fff; font-family:var(--font-sans); margin-bottom:8px;">
+              $1,500.00 <span style="font-size:18px; font-weight:400; color:#A8A29E;">USD</span>
+            </div>
+            <div style="font-size:14px; color:#A8A29E; font-family:var(--font-mono); margin-bottom:20px;">
+              Invoice #MT-2026-089 • Checkout optimization & webhook maintenance
+            </div>
+            <div style="background:rgba(255,255,255,0.05); padding:14px 18px; border-radius:10px; display:flex; align-items:center; justify-content:space-between; font-family:var(--font-mono); font-size:13px;">
+              <span style="color:#D6D3D1;">https://buy.stripe.com/mb_voice_checkout_908f</span>
+              <span style="color:var(--terracotta); font-weight:600; cursor:pointer;">[ COPIED TO CHAT ]</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 10: ZERO MANUAL TYPING (00:37.5 - 00:42.5) ================= -->
+      <section class="scene-layer" id="s10" style="background: var(--cream);">
+        <div class="pixel-grid-bg"></div>
+        <div style="display:flex; flex-direction:column; align-items:center; text-align:center;">
+          <div class="s1-pill">THE RESULT</div>
+          <div class="s10-split">
+            <!-- Left Card -->
+            <div class="glass-card-cream s10-col" style="border-top: 6px solid var(--ink);">
+              <div style="font-size: 58px; font-weight: 700; color: var(--ink);">
+                Zero
+              </div>
+              <div class="editorial-serif" style="font-size: 42px; color: #44403C; margin-top: 4px;">
+                manual typing.
+              </div>
+              <p style="margin-top: 18px; font-size: 17px; color: #78716C; line-height: 1.5;">
+                Audio notes directly convert into tasks, deadlines, and client recaps in under 40 seconds.
+              </p>
+            </div>
+
+            <!-- Right Card -->
+            <div class="glass-card-cream s10-col" style="border-top: 6px solid var(--terracotta);">
+              <div style="font-size: 58px; font-weight: 700; color: var(--terracotta);">
+                Zero
+              </div>
+              <div class="editorial-serif" style="font-size: 42px; color: var(--ink); margin-top: 4px;">
+                dropped deadlines.
+              </div>
+              <p style="margin-top: 18px; font-size: 17px; color: #78716C; line-height: 1.5;">
+                Every client instruction is automatically tracked and assigned with zero human memory leaks.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 11: COMMENT VOICE CTA (00:42.5 - 00:47.5) ================= -->
+      <section class="scene-layer" id="s11" style="background: var(--obsidian);">
+        <div style="display:flex; flex-direction:column; align-items:center; text-align:center;">
+          <div class="cta-card">
+            <div style="font-family:var(--font-mono); font-size:13px; color:#A8A29E; letter-spacing:0.15em;">
+              STOP PAYING A $3,000 ASSISTANT
+            </div>
+            <h2 class="hero-line light" style="font-size: 50px; flex-wrap: wrap; justify-content: center; gap: 14px; text-align: center;">
+              <span>Tasks a smart automation finishes in</span>
+              <span class="editorial-serif text-terracotta" style="font-size: 64px;">seconds.</span>
+            </h2>
+            <div style="margin-top:10px; display:flex; flex-direction:column; align-items:center; gap:16px;">
+              <div style="font-size: 20px; color:#E7E5E4;">
+                Drop a comment below and I'll send you our exact template:
+              </div>
+              <div class="voice-pill" id="s11-pill">
+                Comment "VOICE"
+              </div>
+              <div style="font-family:var(--font-mono); font-size:14px; color:#22C55E; display:flex; align-items:center; gap:8px;">
+                <span>✓</span> <span>Instant private WhatsApp + Make.com / n8n blueprint</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 12: OUTRO & MASTER LOCKUP (00:47.5 - 00:53.2) ================= -->
+      <section class="scene-layer" id="s12" style="background: var(--obsidian);">
+        <div style="display:flex; flex-direction:column; align-items:center; text-align:center; position:relative; padding: 40px 60px;">
+          <div class="corner-bracket bracket-tl" style="top:-10px; left:-10px; border-width: 6px 0 0 6px;"></div>
+          <div class="corner-bracket bracket-br" style="bottom:-10px; right:-10px; border-width: 0 6px 6px 0;"></div>
+          
+          <div style="font-size: 32px; font-weight: 500; color: #A8A29E; margin-bottom: 12px;">
+            Steal the
+          </div>
+          <h1 class="hero-line light" style="font-size: 72px;">
+            <span class="editorial-serif text-terracotta" style="font-size: 88px;">2-minute voice memo.</span>
+          </h1>
+
+          <div style="margin-top: 40px; display:flex; flex-direction:column; align-items:center; gap:14px;">
+            <div style="display:flex; align-items:center; gap:16px;">
+              <div style="width:54px; height:54px; border-radius:14px; background:var(--terracotta); display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-weight:800; font-size:26px; color:#fff;">
+                MT
+              </div>
+              <div style="font-size: 44px; font-weight: 800; letter-spacing: -0.03em; color: #fff;">
+                mubaraktech<span style="color:var(--terracotta)">.ai</span>
+              </div>
+            </div>
+            <div style="font-family:var(--font-mono); font-size:15px; color:#A8A29E; letter-spacing:0.05em;">
+              AI-NATIVE SYSTEMS & AUTONOMOUS WORKFLOWS
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Studio Playbar Controls -->
+  <footer class="studio-controls">
+    <div class="ctrl-group">
+      <button class="ctrl-btn primary" id="btn-play">▶ Play</button>
+      <button class="ctrl-btn" id="btn-audio">🔊 Audio: ON</button>
+    </div>
+    <input type="range" class="time-slider" id="time-slider" min="0" max="53.2" step="0.01" value="0">
+    <div class="ctrl-group">
+      <span class="time-readout" id="time-readout">00:00.00 / 00:53.20</span>
+      <button class="ctrl-btn" id="btn-fullscreen">⛶ Fullscreen</button>
+    </div>
+  </footer>
+</div>
+
+<!-- Audio Element -->
+<audio id="master-audio" src="audio.wav" preload="auto"></audio>
+
+<script>
+  // Detect headless capture environment (CDP / render.mjs)
+  if (navigator.webdriver || window.location.search.includes('render=true')) {
+    document.body.classList.add('headless-render');
+  }
+
+  /* -------------------------------------------------------------
+     THREE.JS DETERMINISTIC BACKGROUND STAGE (Pure Math at Time t)
+     ------------------------------------------------------------- */
+  const threeStage = document.getElementById('three-stage');
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, 1920 / 1080, 0.1, 1000);
+  camera.position.z = 500;
+
+  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+  renderer.setSize(1920, 1080);
+  renderer.setPixelRatio(1);
+  threeStage.appendChild(renderer.domElement);
+
+  // Seeded PRNG
+  function mulberry32(a) {
+    return function() {
+      var t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
+  }
+
+  // Create corner mosaic cubes & floating ambient particles
+  const rng = mulberry32(1042);
+  const cubeGeo = new THREE.BoxGeometry(16, 16, 16);
+  const terracottaMat = new THREE.MeshBasicMaterial({ color: 0xDF5A37, transparent: true, opacity: 0.8 });
+  const darkMat = new THREE.MeshBasicMaterial({ color: 0x1E1815, transparent: true, opacity: 0.6 });
+
+  const cubes = [];
+  const cubeCount = 64;
+  for (let i = 0; i < cubeCount; i++) {
+    const isTerra = rng() > 0.4;
+    const mesh = new THREE.Mesh(cubeGeo, isTerra ? terracottaMat.clone() : darkMat.clone());
+    
+    // Distribute near corners or floating periphery
+    const cornerX = rng() > 0.5 ? 1 : -1;
+    const cornerY = rng() > 0.5 ? 1 : -1;
+    const baseX = cornerX * (650 + rng() * 250);
+    const baseY = cornerY * (350 + rng() * 150);
+    const baseZ = (rng() - 0.5) * 300;
+
+    mesh.position.set(baseX, baseY, baseZ);
+    scene.add(mesh);
+
+    cubes.push({
+      mesh,
+      baseX,
+      baseY,
+      baseZ,
+      speedX: (rng() - 0.5) * 20,
+      speedY: (rng() - 0.5) * 20,
+      rotSpeed: (rng() - 0.5) * 1.5,
+      isTerra
+    });
+  }
+
+  // Pure time function: renderThreeAt(t)
+  function renderThreeAt(t) {
+    for (let i = 0; i < cubes.length; i++) {
+      const c = cubes[i];
+      // Subtle organic floating driven by sine/cosine of timestamp
+      c.mesh.position.x = c.baseX + Math.sin(t * 1.2 + i) * 25;
+      c.mesh.position.y = c.baseY + Math.cos(t * 1.0 + i) * 25;
+      c.mesh.rotation.x = t * c.rotSpeed;
+      c.mesh.rotation.y = t * c.rotSpeed * 0.8;
+
+      // React to music beats (e.g., scene transitions at 14.5s, 37.5s, 47.5s)
+      if (t >= 14.5 && t <= 18.0) {
+        // Swirl slightly inwards during MubarakTech portal reveal
+        c.mesh.position.z = c.baseZ + Math.sin(t * 3.0) * 80;
+      } else {
+        c.mesh.position.z = c.baseZ;
+      }
+    }
+    renderer.render(scene, camera);
+  }
+
+  /* -------------------------------------------------------------
+     SCENE TIMINGS & GSAP MASTER TIMELINE
+     ------------------------------------------------------------- */
+  const scenes = [
+    { id: 's1', name: 'S1 Hook', t: 0.0, dur: 3.5 },
+    { id: 's2', name: 'S2 2 Hours', t: 3.5, dur: 4.0 },
+    { id: 's3', name: 'S3 Exhausting', t: 7.5, dur: 3.5 },
+    { id: 's4', name: 'S4 3 Days Later', t: 11.0, dur: 3.5 },
+    { id: 's5', name: 'S5 Instead', t: 14.5, dur: 3.5 },
+    { id: 's6', name: 'S6 WhatsApp Bot', t: 18.0, dur: 4.5 },
+    { id: 's7', name: 'S7 Extract & Assign', t: 22.5, dur: 5.0 },
+    { id: 's8', name: 'S8 Client Recap', t: 27.5, dur: 5.0 },
+    { id: 's9', name: 'S9 Stripe Invoice', t: 32.5, dur: 5.0 },
+    { id: 's10', name: 'S10 Zero Typing', t: 37.5, dur: 5.0 },
+    { id: 's11', name: 'S11 Comment VOICE', t: 42.5, dur: 5.0 },
+    { id: 's12', name: 'S12 Outro', t: 47.5, dur: 5.7 }
+  ];
+
+  const TOTAL_DURATION = 53.2;
+  const tl = gsap.timeline({ paused: true });
+
+  // Build Scene Transitions
+  scenes.forEach((sc, idx) => {
+    const el = document.getElementById(sc.id);
+    const startT = sc.t;
+    const endT = sc.t + sc.dur;
+
+    // Show scene
+    tl.set(el, { autoAlpha: 1, zIndex: 10 + idx }, startT);
+
+    // Entrance animation
+    if (sc.id === 's1') {
+      tl.fromTo(el.querySelector('.s1-wrap'), 
+        { y: 30, opacity: 0 }, 
+        { y: 0, opacity: 1, duration: 0.6, ease: 'power2.out' }, 
+        startT + 0.1
+      );
+    } else if (sc.id === 's2') {
+      tl.fromTo(el.querySelectorAll('.s2-card'), 
+        { y: 40, opacity: 0, scale: 0.95 }, 
+        { y: 0, opacity: 1, scale: 1, stagger: 0.15, duration: 0.5, ease: 'back.out(1.5)' }, 
+        startT + 0.3
+      );
+    } else if (sc.id === 's4') {
+      // Alert pills pop with bouncy spring
+      tl.fromTo('#s4-alert-1', { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(2.2)' }, startT + 0.4);
+      tl.fromTo('#s4-alert-2', { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(2.2)' }, startT + 0.8);
+      tl.fromTo('#s4-alert-3', { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(2.2)' }, startT + 1.2);
+      tl.fromTo('#s4-alert-4', { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(2.2)' }, startT + 1.6);
+    } else if (sc.id === 's5') {
+      // Brackets snap inward
+      tl.fromTo('.bracket-tl', { x: -30, y: -30, opacity: 0 }, { x: 0, y: 0, opacity: 1, duration: 0.4, ease: 'power3.out' }, startT + 0.2);
+      tl.fromTo('.bracket-br', { x: 30, y: 30, opacity: 0 }, { x: 0, y: 0, opacity: 1, duration: 0.4, ease: 'power3.out' }, startT + 0.2);
+      tl.fromTo('#s5-portal', { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: 'back.out(1.6)' }, startT + 0.7);
+    } else if (sc.id === 's6') {
+      tl.fromTo('.wa-chat-window', { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power2.out' }, startT + 0.3);
+      tl.fromTo('.wa-bubble-bot', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out' }, startT + 1.2);
+    } else if (sc.id === 's8') {
+      // Cursor glide and click
+      tl.fromTo('#s8-cursor', 
+        { x: 120, y: 80, opacity: 0 }, 
+        { x: 0, y: 0, opacity: 1, duration: 0.8, ease: 'power2.out' }, 
+        startT + 0.8
+      );
+      tl.to('#s8-approve-btn', { scale: 0.94, duration: 0.15, yoyo: true, repeat: 1, ease: 'power1.inOut' }, startT + 1.8);
+    } else if (sc.id === 's10') {
+      tl.fromTo(el.querySelectorAll('.s10-col'), 
+        { y: 40, opacity: 0 }, 
+        { y: 0, opacity: 1, stagger: 0.2, duration: 0.6, ease: 'power2.out' }, 
+        startT + 0.3
+      );
+    } else if (sc.id === 's11') {
+      tl.fromTo('#s11-pill', 
+        { scale: 0.85, opacity: 0 }, 
+        { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(2.0)' }, 
+        startT + 0.5
+      );
+    }
+
+    // Hide scene at endT (unless last scene)
+    if (idx < scenes.length - 1) {
+      tl.to(el, { autoAlpha: 0, duration: 0.2, ease: 'power1.in' }, endT - 0.2);
+    }
+  });
+
+  // Expose HyperFrames deterministic seek API
+  window.__seek = function(t) {
+    tl.seek(t, false);
+    renderThreeAt(t);
+    updateUI(t);
+  };
+
+  window.__timelines = { main: tl };
+  window.__duration = TOTAL_DURATION;
+
+  // Listen for HyperFrames CDP render seek events
+  window.addEventListener('hf-seek', (e) => {
+    if (e.detail && typeof e.detail.time === 'number') {
+      window.__seek(e.detail.time);
+    }
+  });
+
+  /* -------------------------------------------------------------
+     STUDIO SHELL UI INTERACTIONS & AUDIO SYNC
+     ------------------------------------------------------------- */
+  const sceneStrip = document.getElementById('scene-strip');
+  const slider = document.getElementById('time-slider');
+  const readout = document.getElementById('time-readout');
+  const playBtn = document.getElementById('btn-play');
+  const audioBtn = document.getElementById('btn-audio');
+  const audio = document.getElementById('master-audio');
+  let audioEnabled = true;
+
+  // Render scene jump pills
+  scenes.forEach((sc, i) => {
+    const pill = document.createElement('button');
+    pill.className = `scene-pill ${i === 0 ? 'active' : ''}`;
+    pill.textContent = `${sc.name} (${sc.t.toFixed(1)}s)`;
+    pill.onclick = () => {
+      window.__seek(sc.t);
+      if (audioEnabled) {
+        audio.currentTime = sc.t;
+      }
+    };
+    sceneStrip.appendChild(pill);
+  });
+
+  function updateUI(t) {
+    if (!slider || !readout) return;
+    slider.value = t;
+    const m = Math.floor(t / 60).toString().padStart(2, '0');
+    const s = (t % 60).toFixed(2).padStart(5, '0');
+    readout.textContent = `${m}:${s} / 00:53.20`;
+
+    // Highlight active pill
+    const pills = sceneStrip.querySelectorAll('.scene-pill');
+    let activeIdx = 0;
+    for (let i = 0; i < scenes.length; i++) {
+      if (t >= scenes[i].t) activeIdx = i;
+    }
+    pills.forEach((p, idx) => {
+      if (idx === activeIdx) p.classList.add('active');
+      else p.classList.remove('active');
+    });
+  }
+
+  // Play / Pause transport
+  let isPlaying = false;
+  let rafId = null;
+  let lastTime = performance.now();
+
+  function tick(now) {
+    if (!isPlaying) return;
+    const dt = (now - lastTime) / 1000;
+    lastTime = now;
+    let nextT = tl.time() + dt;
+    if (nextT >= TOTAL_DURATION) {
+      nextT = 0;
+      if (audioEnabled) audio.currentTime = 0;
+    }
+    window.__seek(nextT);
+    rafId = requestAnimationFrame(tick);
+  }
+
+  playBtn.onclick = () => {
+    if (isPlaying) {
+      isPlaying = false;
+      playBtn.textContent = '▶ Play';
+      cancelAnimationFrame(rafId);
+      audio.pause();
+    } else {
+      isPlaying = true;
+      playBtn.textContent = '⏸ Pause';
+      lastTime = performance.now();
+      if (audioEnabled) {
+        audio.currentTime = tl.time();
+        audio.play().catch(() => {});
+      }
+      rafId = requestAnimationFrame(tick);
+    }
+  };
+
+  slider.oninput = (e) => {
+    const val = parseFloat(e.target.value);
+    window.__seek(val);
+    if (audioEnabled) {
+      audio.currentTime = val;
+    }
+  };
+
+  audioBtn.onclick = () => {
+    audioEnabled = !audioEnabled;
+    audioBtn.textContent = audioEnabled ? '🔊 Audio: ON' : '🔇 Audio: OFF';
+    if (!audioEnabled) {
+      audio.pause();
+    } else if (isPlaying) {
+      audio.currentTime = tl.time();
+      audio.play().catch(() => {});
+    }
+  };
+
+  document.getElementById('btn-fullscreen').onclick = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
+
+  function fitViewport() {
+    if (document.body.classList.contains('headless-render')) return;
+    const area = document.getElementById('viewport-area');
+    const root = document.getElementById('root');
+    if (!area || !root) return;
+    const areaW = area.clientWidth;
+    const areaH = area.clientHeight;
+    const scale = Math.min((areaW - 40) / 1920, (areaH - 40) / 1080, 1.0);
+    root.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', fitViewport);
+  fitViewport();
+
+  // Initial render at t = 0
+  window.__seek(0);
+</script>
+</body>
+</html>

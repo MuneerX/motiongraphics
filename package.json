@@ -1,0 +1,16 @@
+{
+  "name": "first-render",
+  "private": true,
+  "scripts": {
+    "dev": "hyperframes preview",
+    "check": "hyperframes check",
+    "render": "hyperframes render -o renders/first.mp4"
+  },
+  "dependencies": {
+    "konva": "^10.7.1",
+    "playwright": "^1.64.0"
+  },
+  "hypit": {
+    "project": true
+  }
+}
